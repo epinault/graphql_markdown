@@ -10,7 +10,7 @@ by adding `graphql_markdown` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:graphql_markdown, "~> 0.4.3"}
+    {:graphql_markdown, "~> 1.0"}
   ]
 end
 ```
@@ -113,7 +113,7 @@ Documentation is [available on Hexdocs](https://hexdocs.pm/graphql_markdown/)
 
 ## Contributing
 
-1. [Fork it!](http://github.com/podium/graphql_markdown/fork)
+1. [Fork it!](https://github.com/epinault/graphql_markdown/fork)
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)

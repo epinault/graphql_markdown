@@ -1,8 +1,8 @@
 defmodule GraphqlMarkdown.MixProject do
   use Mix.Project
 
-  @project_url "https://github.com/podium/graphql_markdown"
-  @version "0.5.3"
+  @project_url "https://github.com/epinault/graphql_markdown"
+  @version "1.0.0"
 
   def project do
     [

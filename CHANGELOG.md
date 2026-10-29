@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.0 - 2026-10-29
+
+### Changed
+
+* First stable release. The mix task, generators and configuration are unchanged from 0.5.3
+* Repository moved to https://github.com/epinault/graphql_markdown; package links updated
+* CI now tests Elixir 1.17 - 1.20 on OTP 27 - 29; Elixir 1.15 - 1.16 and OTP 25 - 26 are no longer exercised in CI
+* Add a `mix precommit` alias (format, unused-lock check, compile with warnings as errors, test with coverage, credo)
+
 ## 0.5.3 - 2026-04-15
 
 ### Fixed

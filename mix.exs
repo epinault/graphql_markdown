@@ -18,6 +18,7 @@ defmodule GraphqlMarkdown.MixProject do
       docs: docs(),
       package: package(),
       test_coverage: [summary: [threshold: 85]],
+      aliases: aliases(),
       dialyzer: [
         ignore_warnings: ".dialyzer.ignore-warnings",
         list_unused_filters: true,
@@ -26,6 +27,10 @@ defmodule GraphqlMarkdown.MixProject do
         plt_core_path: "priv/plts/core.plt"
       ]
     ]
+  end
+
+  def cli do
+    [preferred_envs: [precommit: :test]]
   end
 
   def application do
@@ -40,6 +45,18 @@ defmodule GraphqlMarkdown.MixProject do
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.30", only: [:dev, :test], runtime: false},
       {:jason, "~> 1.4"}
+    ]
+  end
+
+  defp aliases do
+    [
+      precommit: [
+        "format --check-formatted",
+        "deps.unlock --check-unused",
+        "compile --warnings-as-errors",
+        "test --warnings-as-errors --cover",
+        "credo --strict"
+      ]
     ]
   end
 

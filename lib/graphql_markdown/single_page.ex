@@ -33,7 +33,7 @@ defmodule GraphqlMarkdown.SinglePage do
 
   defp generate_title(options) do
     title = Keyword.get(options, :title, "Graphql Schema")
-    render(MarkdownHelpers.header(title, 1, true))
+    render(MarkdownHelpers.header(title, 1))
   end
 
   defp generate_toc(_schema_details, toc: false), do: :ok
@@ -84,7 +84,6 @@ defmodule GraphqlMarkdown.SinglePage do
     Enum.each(types, fn type ->
       render(
         type["name"]
-        |> String.capitalize()
         |> MarkdownHelpers.anchor()
         |> MarkdownHelpers.list(2)
       )

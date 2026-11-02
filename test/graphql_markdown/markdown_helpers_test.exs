@@ -4,9 +4,13 @@ defmodule GraphqlMarkdown.MarkdownHelpersTest do
   doctest GraphqlMarkdown
 
   describe "#header" do
-    test "it capitalize the header" do
+    test "it capitalizes only the first letter of the header" do
       assert MarkdownHelpers.header("some Header that NeEd capitalizing", 1, true) ==
-               "# Some header that need capitalizing"
+               "# Some Header that NeEd capitalizing"
+    end
+
+    test "it leaves acronyms in a capitalized header untouched" do
+      assert MarkdownHelpers.header("my API docs", 1, true) == "# My API docs"
     end
 
     test "it support different levels the header" do
@@ -21,9 +25,9 @@ defmodule GraphqlMarkdown.MarkdownHelpersTest do
   end
 
   describe "#list" do
-    test "it capitalize the list" do
+    test "it capitalizes only the first letter of the list item" do
       assert MarkdownHelpers.list("some Header that NeEd capitalizing", 1, true) ==
-               "  * Some header that need capitalizing"
+               "  * Some Header that NeEd capitalizing"
     end
 
     test "it support different levels the list" do

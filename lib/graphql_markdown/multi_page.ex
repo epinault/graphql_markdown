@@ -74,9 +74,9 @@ defmodule GraphqlMarkdown.MultiPage do
 
       generate_description(type, field["description"])
 
-      data = generate_data(field["args"])
-      render(type, MarkdownHelpers.table([field: {}, description: {}], data))
-      render_newline(type)
+      field["args"]
+      |> generate_data()
+      |> render_table(type, field: {}, description: {})
 
       gql_code_markdown =
         type
@@ -102,20 +102,17 @@ defmodule GraphqlMarkdown.MultiPage do
 
       case detail["kind"] do
         ^input_kind ->
-          data = generate_data(detail["inputFields"])
-
-          render(type, MarkdownHelpers.table([field: {}, description: {}], data))
+          detail["inputFields"]
+          |> generate_data()
+          |> render_table(type, field: {}, description: {})
 
         ^scalar_kind ->
           :ok
 
         ^enum_kind ->
-          data =
-            Enum.map(detail["enumValues"], fn enum ->
-              [enum["name"], enum["description"]]
-            end)
-
-          render(type, MarkdownHelpers.table([value: {}, description: {}], data))
+          detail["enumValues"]
+          |> Enum.map(fn enum -> [enum["name"], enum["description"]] end)
+          |> render_table(type, value: {}, description: {})
 
         ^union_kind ->
           render(type, "Possible types:")
@@ -123,8 +120,9 @@ defmodule GraphqlMarkdown.MultiPage do
           generate_unions_possible_types(type, detail["possibleTypes"])
 
         _ ->
-          data = generate_data(detail["fields"])
-          render(type, MarkdownHelpers.table([field: {}, description: {}], data))
+          detail["fields"]
+          |> generate_data()
+          |> render_table(type, field: {}, description: {})
       end
 
       render_newline(type)
@@ -159,22 +157,19 @@ defmodule GraphqlMarkdown.MultiPage do
         |> Schema.full_field_type()
         |> MarkdownHelpers.link(reference_for_kind(field))
 
-      default_value = MarkdownHelpers.default_value(field["defaultValue"])
-
-      description =
-        case default_value do
-          "" ->
-            "#{field["description"]}"
-
-          _ ->
-            Enum.join([field["description"], default_value], ".")
-        end
-
       [
         MarkdownHelpers.code(field["name"]) <> " ( " <> type_details <> " )",
-        description
+        MarkdownHelpers.field_description(field["description"], field["defaultValue"])
       ]
     end)
+  end
+
+  # A table with no rows is only a header, so it is skipped altogether.
+  defp render_table([], _section, _columns), do: :ok
+
+  defp render_table(rows, section, columns) do
+    render(section, MarkdownHelpers.table(columns, rows))
+    render_newline(section)
   end
 
   defp reference_for_kind(field) do

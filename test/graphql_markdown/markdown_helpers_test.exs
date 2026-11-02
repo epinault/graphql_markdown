@@ -330,6 +330,30 @@ defmodule GraphqlMarkdown.MarkdownHelpersTest do
     end
   end
 
+  describe "#field_description" do
+    test "returns an empty string when there is no description and no default" do
+      assert MarkdownHelpers.field_description(nil, nil) == ""
+    end
+
+    test "returns only the description when there is no default" do
+      assert MarkdownHelpers.field_description("Page size", nil) == "Page size"
+    end
+
+    test "returns only the default sentence when there is no description" do
+      assert MarkdownHelpers.field_description(nil, "20") == "The default value is `20`"
+    end
+
+    test "separates description and default with a period and a space" do
+      assert MarkdownHelpers.field_description("Page size", "20") ==
+               "Page size. The default value is `20`"
+    end
+
+    test "does not double the period when the description already ends with one" do
+      assert MarkdownHelpers.field_description("Page size.", "20") ==
+               "Page size. The default value is `20`"
+    end
+  end
+
   describe "#code" do
     test "display as code" do
       assert MarkdownHelpers.code("some text") == "`some text`"

@@ -1,0 +1,84 @@
+# Queries
+
+## userSsoDetails
+
+Type: [UserSsoDetails](objects.html#userssodetails)
+
+| field | description |
+| ----- | ----------- |
+| `emailOrPhone` ( [String!](scalars.html#string) ) |  |
+
+```gql
+query UserSsoDetails($emailOrPhone: String!) {
+  userSsoDetails(emailOrPhone: $emailOrPhone) {
+    domain
+    ssoEnabled
+  }
+}
+```
+
+
+## heroForEpisode
+
+Type: [Character](scalars.html#character)
+
+| field | description |
+| ----- | ----------- |
+| `episode` ( [String!](scalars.html#string) ) |  |
+
+```gql
+query HeroForEpisode($episode: String!) {
+  heroForEpisode(episode: $episode) {
+    id
+    name
+    ... on Human {
+    }
+    ... on Droid {
+    }
+  }
+}
+```
+
+
+## droidsInEpisode
+
+Type: [Droid](objects.html#droid)
+
+Get droids for episode
+
+| field | description |
+| ----- | ----------- |
+| `episode` ( [String!](scalars.html#string) ) |  |
+
+```gql
+query DroidsInEpisode($episode: String!) {
+  droidsInEpisode(episode: $episode) {
+    id
+    name
+    primaryFunction
+  }
+}
+```
+
+
+## humansInEpisode
+
+Type: [Human](objects.html#human)
+
+Get the humans in an episode
+
+| field | description |
+| ----- | ----------- |
+| `episode` ( [String!](scalars.html#string) ) |  |
+
+```gql
+query HumansInEpisode($episode: String!) {
+  humansInEpisode(episode: $episode) {
+    id
+    name
+    age
+  }
+}
+```
+
+

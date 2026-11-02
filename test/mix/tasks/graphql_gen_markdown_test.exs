@@ -3,18 +3,19 @@ defmodule Mix.Tasks.GraphqlGenMarkdownTest do
 
   alias Mix.Tasks.GraphqlGenMarkdown
 
+  @moduletag :tmp_dir
+
   setup do
-    File.mkdir_p!("guides")
     Mix.shell(Mix.Shell.Process)
     on_exit(fn -> Mix.shell(Mix.Shell.IO) end)
     :ok
   end
 
-  test "prints the generated files on success" do
-    GraphqlGenMarkdown.run(["-f", "test/fixtures/schema.json", "-o", "guides"])
+  test "prints the generated files on success", %{tmp_dir: dir} do
+    GraphqlGenMarkdown.run(["-f", "test/fixtures/schema.json", "-o", dir])
 
     assert_received {:mix_shell, :info, [message]}
-    assert message =~ "guides/graphql_schema.md"
+    assert message =~ Path.join(dir, "graphql_schema.md")
   end
 
   test "raises with usage when --schema is missing" do

@@ -158,6 +158,14 @@ in order to craft an excellent pull request:
    mix test
    ```
 
+   The generated markdown is compared byte-for-byte with the golden files
+   under `test/fixtures/expected/`. If your change alters the output on
+   purpose, regenerate them and review the diff before committing:
+
+   ```bash
+   UPDATE_GOLDEN=1 mix test test/graphql_markdown/golden_test.exs
+   ```
+
 6. Push your topic branch up to your fork:
 
    ```bash

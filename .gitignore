@@ -25,13 +25,3 @@ graphql_markdown-*.tar
 # Temporary files, for example, from tests.
 /tmp/
 
-guides/enums.md
-guides/graphql_schema.md
-guides/inputs.md
-guides/interfaces.md
-guides/mutations.md
-guides/objects.md
-guides/queries.md
-guides/scalars.md
-guides/unions.md
-guides/subscriptions.md

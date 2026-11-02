@@ -3,14 +3,13 @@ defmodule GraphqlMarkdown.EmptyTablesAndDefaultsTest do
   Regression tests for header-only tables and the default-value sentence
   (issue #10).
   """
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
 
   @fixture "test/fixtures/empty_args_schema.json"
 
   setup do
-    File.mkdir_p!("guides")
-    assert {:ok, _} = GraphqlMarkdown.generate(schema: @fixture, output_dir: "guides")
-    %{content: File.read!("guides/graphql_schema.md")}
+    assert {:ok, %{"graphql_schema.md" => content}} = GraphqlMarkdown.render(schema: @fixture)
+    %{content: content}
   end
 
   test "an operation without arguments does not render a header-only table", %{content: content} do

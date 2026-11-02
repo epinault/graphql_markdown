@@ -84,11 +84,27 @@ defmodule GraphqlMarkdown.MarkdownHelpers do
 
     data =
       Enum.map_join(rows, new_line(), fn row ->
-        "| " <> Enum.join(row, " | ") <> " |"
+        "| " <> Enum.map_join(row, " | ", &escape_cell/1) <> " |"
       end)
 
     headers <> new_line() <> data
   end
+
+  @doc """
+  Makes a value safe to place inside a markdown table cell: pipes are
+  escaped so they do not start a new column, and line breaks become `<br>`
+  so the row is not split.
+  """
+  @spec escape_cell(String.t() | nil) :: String.t()
+  def escape_cell(nil), do: ""
+
+  def escape_cell(text) when is_binary(text) do
+    text
+    |> String.replace("|", "\\|")
+    |> String.replace(~r/\r?\n/, "<br>")
+  end
+
+  def escape_cell(other), do: other |> to_string() |> escape_cell()
 
   @doc """
   Generates a code block for a GraphQL operation. Only the top-level fields returned are represented in the code block.

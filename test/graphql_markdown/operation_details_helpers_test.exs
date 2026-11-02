@@ -582,8 +582,8 @@ defmodule GraphqlMarkdown.OperationDetailsHelpersTest do
           %{name: "name", type: "SCALAR"},
           %{name: "primaryFunction", type: "SCALAR"}
         ],
-        kind: "LIST",
-        name: nil
+        kind: "OBJECT",
+        name: "Droid"
       }
 
       operation_details =
@@ -603,8 +603,8 @@ defmodule GraphqlMarkdown.OperationDetailsHelpersTest do
           %{name: "name", type: "SCALAR"},
           %{name: "age", type: "SCALAR"}
         ],
-        kind: "LIST",
-        name: nil
+        kind: "OBJECT",
+        name: "Human"
       }
 
       operation_details =
@@ -616,5 +616,65 @@ defmodule GraphqlMarkdown.OperationDetailsHelpersTest do
 
       assert operation_details.return_type == expected_return_type
     end
+
+    test "unwraps a NON_NULL OBJECT return type (Droid!)" do
+      query = put_in(@user_sso_details_query["type"], non_null(@user_sso_details_query["type"]))
+
+      %{return_type: return_type} =
+        OperationDetailsHelpers.generate_operation_details("queries", query, @schema_details)
+
+      assert return_type == %{
+               kind: "OBJECT",
+               name: "UserSsoDetails",
+               fields: [
+                 %{name: "domain", type: "SCALAR"},
+                 %{name: "ssoEnabled", type: "SCALAR"}
+               ]
+             }
+    end
+
+    test "unwraps a NON_NULL LIST of NON_NULL OBJECT return type ([Droid!]!)" do
+      inner = %{"kind" => "OBJECT", "name" => "Droid", "ofType" => nil}
+      query = put_in(@droids_in_episode_query["type"], non_null(list_of(non_null(inner))))
+
+      %{return_type: return_type} =
+        OperationDetailsHelpers.generate_operation_details("queries", query, @schema_details)
+
+      assert return_type.kind == "OBJECT"
+      assert return_type.name == "Droid"
+      assert Enum.map(return_type.fields, & &1.name) == ["id", "name", "primaryFunction"]
+    end
+
+    test "unwraps a NON_NULL SCALAR return type to the scalar" do
+      scalar = %{"kind" => "SCALAR", "name" => "String", "ofType" => nil}
+      query = put_in(@user_sso_details_query["type"], non_null(scalar))
+
+      %{return_type: return_type} =
+        OperationDetailsHelpers.generate_operation_details("queries", query, @schema_details)
+
+      assert return_type == %{kind: "SCALAR", name: "String", fields: []}
+    end
+
+    test "unwraps a LIST of UNION return type to the union" do
+      union = %{"kind" => "UNION", "name" => "LoginResponseV2", "ofType" => nil}
+      mutation = put_in(@password_login_v2_mutation["type"], list_of(union))
+
+      %{return_type: return_type} =
+        OperationDetailsHelpers.generate_operation_details(
+          "mutations",
+          mutation,
+          @schema_details
+        )
+
+      assert return_type.kind == "UNION"
+
+      assert Enum.map(return_type.possible_types, & &1.name) == [
+               "LoginResponse",
+               "UnexpectedRequest"
+             ]
+    end
   end
+
+  defp non_null(type), do: %{"kind" => "NON_NULL", "name" => nil, "ofType" => type}
+  defp list_of(type), do: %{"kind" => "LIST", "name" => nil, "ofType" => type}
 end

@@ -71,132 +71,61 @@ defmodule GraphqlMarkdown.OperationDetailsHelpers do
     end)
   end
 
+  # Strips NON_NULL and LIST wrappers so that `Droid`, `Droid!`, `[Droid]`,
+  # `[Droid!]!` and deeper nestings all resolve to the named `Droid` type.
+  @spec unwrap_type(map()) :: map()
+  defp unwrap_type(%{"kind" => kind, "ofType" => inner})
+       when kind in ["NON_NULL", "LIST"] and not is_nil(inner),
+       do: unwrap_type(inner)
+
+  defp unwrap_type(type), do: type
+
   @spec return_fields(map(), GraphqlMarkdown.Schema.t()) :: return_type()
-  defp return_fields(%{"name" => name, "kind" => "OBJECT"}, schema_details) do
-    object_fields =
-      schema_details
-      |> Map.get(:objects, [])
-      |> Enum.find(fn object -> object["name"] == name end)
-      |> Map.get("fields", [])
-      |> Enum.map(fn field ->
-        field_name = field["name"]
-        type = return_field_type(field)
-        %{name: field_name, type: type}
-      end)
+  defp return_fields(type, schema_details) do
+    %{"name" => name, "kind" => kind} = unwrap_type(type)
 
-    %{
-      name: name,
-      kind: "OBJECT",
-      fields: object_fields
-    }
+    case kind do
+      "OBJECT" ->
+        %{name: name, kind: kind, fields: fields_of(schema_details, :objects, name)}
+
+      "UNION" ->
+        %{
+          name: name,
+          kind: kind,
+          possible_types: possible_types_of(schema_details, :unions, name)
+        }
+
+      "INTERFACE" ->
+        %{
+          name: name,
+          kind: kind,
+          fields: fields_of(schema_details, :interfaces, name),
+          possible_types: possible_types_of(schema_details, :interfaces, name)
+        }
+
+      _ ->
+        %{name: name, kind: kind, fields: []}
+    end
   end
 
-  defp return_fields(%{"name" => name, "kind" => "UNION"}, schema_details) do
-    possible_types =
-      schema_details
-      |> Map.get(:unions, [])
-      |> Enum.find(fn union -> union["name"] == name end)
-      |> Map.get("possibleTypes", [])
-      |> Enum.map(fn field ->
-        name = field["name"]
-        %{name: name, type: "OBJECT"}
-      end)
-
-    %{
-      name: name,
-      kind: "UNION",
-      possible_types: possible_types
-    }
+  defp find_type(schema_details, section, name) do
+    schema_details
+    |> Map.get(section, [])
+    |> Enum.find(%{}, fn type -> type["name"] == name end)
   end
 
-  defp return_fields(%{"name" => name, "kind" => "INTERFACE"}, schema_details) do
-    interface_fields =
-      schema_details
-      |> Map.get(:interfaces, [])
-      |> Enum.find(fn x -> x["name"] == name end)
-      |> Map.get("fields", [])
-      |> Enum.map(fn field ->
-        field_name = field["name"]
-        type = return_field_type(field)
-        %{name: field_name, type: type}
-      end)
-
-    possible_types =
-      schema_details
-      |> Map.get(:interfaces, [])
-      |> Enum.find(fn interface -> interface["name"] == name end)
-      |> Map.get("possibleTypes", [])
-      |> Enum.map(fn field ->
-        name = field["name"]
-        %{name: name, type: "OBJECT"}
-      end)
-
-    %{
-      name: name,
-      kind: "INTERFACE",
-      fields: interface_fields,
-      possible_types: possible_types
-    }
+  defp fields_of(schema_details, section, name) do
+    schema_details
+    |> find_type(section, name)
+    |> Map.get("fields", [])
+    |> Enum.map(fn field -> %{name: field["name"], type: return_field_type(field)} end)
   end
 
-  defp return_fields(
-         %{"name" => name, "kind" => "LIST", "ofType" => %{"kind" => "OBJECT"}} = return_field,
-         schema_details
-       ) do
-    name_of_list_type = get_in(return_field, ["ofType", "name"])
-
-    fields =
-      schema_details
-      |> Map.get(:objects, [])
-      |> Enum.find(fn object -> object["name"] == name_of_list_type end)
-      |> Map.get("fields", [])
-      |> Enum.map(fn field ->
-        field_name = field["name"]
-        type = return_field_type(field)
-        %{name: field_name, type: type}
-      end)
-
-    %{
-      name: name,
-      kind: "LIST",
-      fields: fields
-    }
-  end
-
-  defp return_fields(
-         %{
-           "name" => name,
-           "kind" => "NON_NULL",
-           "ofType" => %{"kind" => "LIST", "ofType" => %{"kind" => "OBJECT"}}
-         } = return_field,
-         schema_details
-       ) do
-    name_of_list_type = get_in(return_field, ["ofType", "ofType", "name"])
-
-    fields =
-      schema_details
-      |> Map.get(:objects, [])
-      |> Enum.find(fn object -> object["name"] == name_of_list_type end)
-      |> Map.get("fields", [])
-      |> Enum.map(fn field ->
-        field_name = field["name"]
-        type = return_field_type(field)
-        %{name: field_name, type: type}
-      end)
-
-    %{
-      name: name,
-      kind: "LIST",
-      fields: fields
-    }
-  end
-
-  defp return_fields(return_type, _schema_details) do
-    %{
-      name: return_type["name"],
-      kind: return_type["kind"],
-      fields: []
-    }
+  defp possible_types_of(schema_details, section, name) do
+    schema_details
+    |> find_type(section, name)
+    |> Map.get("possibleTypes", [])
+    |> Enum.map(fn type -> %{name: type["name"], type: "OBJECT"} end)
   end
 
   @spec return_field_type(map()) :: String.t()

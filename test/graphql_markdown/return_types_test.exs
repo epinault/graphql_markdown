@@ -3,17 +3,15 @@ defmodule GraphqlMarkdown.ReturnTypesTest do
   Regression tests for the example operations generated for the different
   return-type shapes an introspection result can contain (issue #5).
   """
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
 
   @fixture "test/fixtures/return_types_schema.json"
 
   setup do
-    File.mkdir_p!("guides")
+    assert {:ok, %{"graphql_schema.md" => content}} =
+             GraphqlMarkdown.render(schema: @fixture, no_toc: true)
 
-    assert {:ok, ["guides/graphql_schema.md"]} =
-             GraphqlMarkdown.generate(schema: @fixture, output_dir: "guides", no_toc: true)
-
-    %{content: File.read!("guides/graphql_schema.md")}
+    %{content: content}
   end
 
   test "non-null list of non-null objects ([Droid!]!) selects the object's fields", %{

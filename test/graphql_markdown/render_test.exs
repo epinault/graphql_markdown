@@ -3,14 +3,11 @@ defmodule GraphqlMarkdown.RenderTest do
   Tests for the in-memory rendering API and for generation being free of
   global process state (issue #11).
   """
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
+
+  @moduletag :tmp_dir
 
   @schema "test/fixtures/schema.json"
-
-  setup do
-    File.mkdir_p!("guides")
-    :ok
-  end
 
   describe "render/1" do
     test "returns the single-page markdown keyed by filename without touching disk" do
@@ -29,14 +26,14 @@ defmodule GraphqlMarkdown.RenderTest do
       assert pages["queries.md"] =~ "# Queries"
     end
 
-    test "returns the same content that generate/1 writes to disk" do
+    test "returns the same content that generate/1 writes to disk", %{tmp_dir: dir} do
       assert {:ok, %{"graphql_schema.md" => rendered}} =
                GraphqlMarkdown.render(schema: @schema, title: "Same")
 
-      assert {:ok, ["guides/graphql_schema.md"]} =
-               GraphqlMarkdown.generate(schema: @schema, output_dir: "guides", title: "Same")
+      assert {:ok, [path]} =
+               GraphqlMarkdown.generate(schema: @schema, output_dir: dir, title: "Same")
 
-      assert File.read!("guides/graphql_schema.md") == rendered
+      assert File.read!(path) == rendered
     end
 
     test "propagates load errors" do
@@ -48,27 +45,22 @@ defmodule GraphqlMarkdown.RenderTest do
   end
 
   describe "generate/1" do
-    test "can run concurrently in the same VM" do
-      dirs = for i <- 1..4, do: Path.join("guides", "concurrent_#{i}")
+    test "can run concurrently in the same VM", %{tmp_dir: dir} do
+      dirs = for i <- 1..4, do: Path.join(dir, "concurrent_#{i}")
       Enum.each(dirs, &File.mkdir_p!/1)
 
       results =
         dirs
-        |> Task.async_stream(fn dir ->
-          GraphqlMarkdown.generate(schema: @schema, output_dir: dir)
+        |> Task.async_stream(fn out ->
+          GraphqlMarkdown.generate(schema: @schema, output_dir: out)
         end)
         |> Enum.map(fn {:ok, result} -> result end)
 
       assert results == Enum.map(dirs, &{:ok, [Path.join(&1, "graphql_schema.md")]})
-    after
-      File.rm_rf!("guides/concurrent_1")
-      File.rm_rf!("guides/concurrent_2")
-      File.rm_rf!("guides/concurrent_3")
-      File.rm_rf!("guides/concurrent_4")
     end
 
-    test "does not leave a named renderer process behind" do
-      assert {:ok, _} = GraphqlMarkdown.generate(schema: @schema, output_dir: "guides")
+    test "does not leave a named renderer process behind", %{tmp_dir: dir} do
+      assert {:ok, _} = GraphqlMarkdown.generate(schema: @schema, output_dir: dir)
       refute Process.whereis(:single)
     end
   end

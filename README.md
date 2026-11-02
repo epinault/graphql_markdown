@@ -107,6 +107,20 @@ Make sure the absinthe schema is specified or generated with that name. Or add t
 config :absinthe, schema: YouApp.GraphQL.Schema
 ```
 
+## Using it as a library
+
+`GraphqlMarkdown.generate/1` takes the same options as the mix task and writes the files:
+
+```elixir
+{:ok, files} = GraphqlMarkdown.generate(schema: "schema.json", output_dir: "guides", multi_page: true)
+```
+
+`GraphqlMarkdown.render/1` returns the markdown in memory instead, keyed by filename:
+
+```elixir
+{:ok, %{"graphql_schema.md" => markdown}} = GraphqlMarkdown.render(schema: "schema.json")
+```
+
 ## Documentation
 
 Documentation is [available on Hexdocs](https://hexdocs.pm/graphql_markdown/)

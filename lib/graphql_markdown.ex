@@ -6,15 +6,50 @@ defmodule GraphqlMarkdown do
   alias GraphqlMarkdown.Schema
   alias GraphqlMarkdown.SinglePage
 
-  @doc """
-  Perform the conversion to generate the markdown files
+  @typedoc "Rendered pages, keyed by filename (for example `\"graphql_schema.md\"`)."
+  @type pages :: %{String.t() => String.t()}
 
+  @type error :: :invalid_schema | File.posix() | Jason.DecodeError.t()
+
+  @doc """
+  Renders the markdown in memory and returns it keyed by filename.
+
+  Nothing is written to disk. Use this to embed the generator in your own
+  pipeline or to inspect the output in tests.
+
+  Accepts the same options as `generate/1` except `:output_dir`.
   """
-  @spec generate(keyword()) :: {:ok, list(binary())} | {:error, any}
+  @spec render(keyword()) :: {:ok, pages()} | {:error, error()}
+  def render(options) do
+    with {:ok, json} <- load_json(options),
+         {:ok, schema} <- Schema.schema_from_json(json) do
+      {:ok, schema |> render_schema(options) |> Map.new()}
+    end
+  end
+
+  @doc """
+  Renders the markdown and writes it into `:output_dir` (default: the
+  current directory). Returns the list of files written.
+
+  Files are written only after every page has been rendered, so a failure
+  never leaves a partially written file behind.
+  """
+  @spec generate(keyword()) :: {:ok, [Path.t()]} | {:error, error()}
   def generate(options) do
     with {:ok, json} <- load_json(options),
          {:ok, schema} <- Schema.schema_from_json(json) do
-      {:ok, render_schema(schema, options)}
+      output_dir = Keyword.get(options, :output_dir, ".")
+
+      paths =
+        schema
+        |> render_schema(options)
+        |> Enum.map(fn {filename, content} ->
+          path = Path.join(output_dir, filename)
+          File.write!(path, content)
+          path
+        end)
+
+      {:ok, paths}
     end
   end
 
@@ -49,11 +84,6 @@ defmodule GraphqlMarkdown do
     generate_strategy(options[:multi_page]).render_schema(schema_details, options)
   end
 
-  defp generate_strategy(true) do
-    MultiPage
-  end
-
-  defp generate_strategy(_) do
-    SinglePage
-  end
+  defp generate_strategy(true), do: MultiPage
+  defp generate_strategy(_), do: SinglePage
 end

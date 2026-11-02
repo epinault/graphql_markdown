@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+* `GraphqlMarkdown.render/1` renders the markdown in memory and returns it keyed by filename, without writing to disk
+
+### Changed
+
+* Pages are rendered fully in memory and written once. `generate/1` can run concurrently in the same VM, and a failure no longer leaves a partially written file behind
+
+### Removed
+
+* `GraphqlMarkdown.Renderer`. It was an internal GenServer used to stream lines to disk and was never part of the documented API
+
 ## 1.0.0 - 2026-10-29
 
 ### Changed

@@ -78,6 +78,23 @@ defmodule GraphqlMarkdown.MarkdownHelpersTest do
              ]) ==
                "| name | Description |\n| ---- | ----------- |\n| toto | some description |\n| titi | another description |"
     end
+
+    test "escapes pipes inside cells so they do not add columns" do
+      assert MarkdownHelpers.table([name: %{}, Description: %{}], [["a", "x | y"]]) ==
+               "| name | Description |\n| ---- | ----------- |\n| a | x \\| y |"
+    end
+
+    test "replaces newlines inside cells with <br> so rows stay intact" do
+      assert MarkdownHelpers.table([name: %{}, Description: %{}], [
+               ["a", "Line one\nLine two\r\nLine three"]
+             ]) ==
+               "| name | Description |\n| ---- | ----------- |\n| a | Line one<br>Line two<br>Line three |"
+    end
+
+    test "renders nil cells as empty" do
+      assert MarkdownHelpers.table([name: %{}, Description: %{}], [["a", nil]]) ==
+               "| name | Description |\n| ---- | ----------- |\n| a |  |"
+    end
   end
 
   describe "#graphql_operation_code_block" do

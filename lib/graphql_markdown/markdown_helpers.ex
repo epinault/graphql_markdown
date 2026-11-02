@@ -65,6 +65,22 @@ defmodule GraphqlMarkdown.MarkdownHelpers do
     "The default value is `#{defaultValue}`"
   end
 
+  @doc """
+  Builds the description cell for a field or argument, appending the default
+  value sentence when there is one.
+  """
+  @spec field_description(String.t() | nil, any()) :: String.t()
+  def field_description(description, default) do
+    description = description || ""
+    default_sentence = default_value(default)
+
+    cond do
+      default_sentence == "" -> description
+      description == "" -> default_sentence
+      true -> String.trim_trailing(description, ".") <> ". " <> default_sentence
+    end
+  end
+
   @spec code(String.t()) :: String.t()
   def code(text), do: "`#{text}`"
 

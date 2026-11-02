@@ -54,6 +54,33 @@ defmodule Mix.Tasks.GraphqlGenMarkdown do
   def run(args) do
     {parsed_args, _} = OptionParser.parse!(args, aliases: @args_aliases, strict: @args)
 
-    GraphqlMarkdown.generate(parsed_args)
+    unless parsed_args[:schema] do
+      Mix.raise("""
+      --schema (-f) is required.
+
+      usage: mix graphql_gen_markdown -f path/to/schema.json [-o DIR] [-m] [-t TITLE] [--no-toc]
+      """)
+    end
+
+    case GraphqlMarkdown.generate(parsed_args) do
+      {:ok, files} ->
+        Mix.shell().info("Generated:\n" <> Enum.map_join(files, "\n", &("  " <> &1)))
+        {:ok, files}
+
+      {:error, reason} ->
+        Mix.raise(error_message(parsed_args[:schema], reason))
+    end
   end
+
+  defp error_message(path, :enoent), do: "Could not read #{path}: no such file or directory"
+
+  defp error_message(path, %Jason.DecodeError{} = error),
+    do: "#{path} is not valid JSON: #{Exception.message(error)}"
+
+  defp error_message(path, :invalid_schema),
+    do:
+      "#{path} is not a GraphQL introspection result (expected a top-level \"data\" -> \"__schema\" key)"
+
+  defp error_message(path, reason),
+    do: "Failed to generate markdown from #{path}: #{inspect(reason)}"
 end

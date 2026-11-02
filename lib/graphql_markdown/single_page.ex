@@ -137,7 +137,6 @@ defmodule GraphqlMarkdown.SinglePage do
       render_newline()
 
       generate_description(field["description"])
-      render_newline()
 
       data = generate_data(field["args"])
       render(MarkdownHelpers.table([field: {}, description: {}], data))
@@ -164,6 +163,7 @@ defmodule GraphqlMarkdown.SinglePage do
     Enum.each(details, fn detail ->
       render(MarkdownHelpers.header(detail["name"], 3))
       render_newline()
+      generate_description(detail["description"])
 
       case detail["kind"] do
         ^input_kind ->
@@ -171,13 +171,9 @@ defmodule GraphqlMarkdown.SinglePage do
           render(MarkdownHelpers.table([field: {}, description: {}], data))
 
         ^scalar_kind ->
-          generate_description(detail["description"])
+          :ok
 
         ^enum_kind ->
-          generate_description(detail["description"])
-
-          render_newline()
-
           data =
             Enum.map(detail["enumValues"], fn enum ->
               [enum["name"], enum["description"]]
@@ -186,9 +182,6 @@ defmodule GraphqlMarkdown.SinglePage do
           render(MarkdownHelpers.table([value: {}, description: {}], data))
 
         ^union_kind ->
-          generate_description(detail["description"])
-
-          render_newline()
           render("Possible types:")
           render_newline()
 
@@ -213,10 +206,14 @@ defmodule GraphqlMarkdown.SinglePage do
     end)
   end
 
+  # Renders the description as its own paragraph. Nothing is emitted when the
+  # schema has no description, so the following block directly follows the
+  # header.
+  defp generate_description(nil), do: :ok
+
   defp generate_description(description) do
-    if description do
-      render(description)
-    end
+    render(description)
+    render_newline()
   end
 
   defp generate_data(fields) do

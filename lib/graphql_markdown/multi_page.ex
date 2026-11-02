@@ -73,7 +73,6 @@ defmodule GraphqlMarkdown.MultiPage do
       render_newline(type)
 
       generate_description(type, field["description"])
-      render_newline(type)
 
       data = generate_data(field["args"])
       render(type, MarkdownHelpers.table([field: {}, description: {}], data))
@@ -99,6 +98,7 @@ defmodule GraphqlMarkdown.MultiPage do
     Enum.each(details, fn detail ->
       render(type, MarkdownHelpers.header(detail["name"], 2))
       render_newline(type)
+      generate_description(type, detail["description"])
 
       case detail["kind"] do
         ^input_kind ->
@@ -107,13 +107,9 @@ defmodule GraphqlMarkdown.MultiPage do
           render(type, MarkdownHelpers.table([field: {}, description: {}], data))
 
         ^scalar_kind ->
-          generate_description(type, detail["description"])
+          :ok
 
         ^enum_kind ->
-          generate_description(type, detail["description"])
-
-          render_newline(type)
-
           data =
             Enum.map(detail["enumValues"], fn enum ->
               [enum["name"], enum["description"]]
@@ -122,9 +118,6 @@ defmodule GraphqlMarkdown.MultiPage do
           render(type, MarkdownHelpers.table([value: {}, description: {}], data))
 
         ^union_kind ->
-          generate_description(type, detail["description"])
-
-          render_newline(type)
           render(type, "Possible types:")
           render_newline(type)
           generate_unions_possible_types(type, detail["possibleTypes"])
@@ -149,10 +142,14 @@ defmodule GraphqlMarkdown.MultiPage do
     end)
   end
 
+  # Renders the description as its own paragraph. Nothing is emitted when the
+  # schema has no description, so the following block directly follows the
+  # header.
+  defp generate_description(_section, nil), do: :ok
+
   defp generate_description(section, description) do
-    if description do
-      render(section, description)
-    end
+    render(section, description)
+    render_newline(section)
   end
 
   defp generate_data(fields) do

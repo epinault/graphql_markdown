@@ -53,7 +53,7 @@ defmodule GraphqlMarkdown.SinglePage do
   defp print_toc_type(_, nil), do: ""
 
   defp print_toc_type(type_label, %{"fields" => fields} = _types)
-       when type_label in ["queries", "mutations"] do
+       when type_label in ["queries", "mutations", "subscriptions"] do
     # render(
     #   type_label
     #   |> String.capitalize()
@@ -93,7 +93,17 @@ defmodule GraphqlMarkdown.SinglePage do
 
   def generate_sections(schema_details) do
     Enum.each(
-      ["queries", "mutations", "objects", "inputs", "enums", "scalars", "interfaces", "unions"],
+      [
+        "queries",
+        "mutations",
+        "subscriptions",
+        "objects",
+        "inputs",
+        "enums",
+        "scalars",
+        "interfaces",
+        "unions"
+      ],
       fn section_name ->
         generate_section(
           section_name,

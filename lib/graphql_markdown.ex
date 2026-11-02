@@ -30,10 +30,9 @@ defmodule GraphqlMarkdown do
     subscription_type_name = Schema.subscription_type(schema)
     types = Schema.types(schema)
 
-    filtered_types =
-      Enum.filter(types, fn type ->
-        type["name"] != query_type_name && type["name"] != mutation_type_name
-      end)
+    root_type_names = [query_type_name, mutation_type_name, subscription_type_name]
+
+    filtered_types = Enum.reject(types, fn type -> type["name"] in root_type_names end)
 
     schema_details = %Schema{
       mutations: List.first(Schema.find_and_sort_type(types, "name", mutation_type_name)),

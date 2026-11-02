@@ -1655,6 +1655,29 @@
             {
               "args": [],
               "deprecationReason": null,
+              "description": "Fires when a user logs in",
+              "isDeprecated": false,
+              "name": "loginEvent",
+              "type": {
+                "kind": "OBJECT",
+                "name": "LoginResponse",
+                "ofType": null
+              }
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "kind": "OBJECT",
+          "name": "RootSubscriptionType",
+          "possibleTypes": null
+        },
+        {
+          "description": null,
+          "enumValues": null,
+          "fields": [
+            {
+              "args": [],
+              "deprecationReason": null,
               "description": null,
               "isDeprecated": false,
               "name": "idToken",

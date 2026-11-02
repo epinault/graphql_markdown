@@ -115,4 +115,33 @@ defmodule GraphqlMarkdownTest do
       assert content =~ "Invoice UID \u2014 required when job_uid is absent"
     end
   end
+
+  describe "subscriptions" do
+    test "single page renders subscriptions and does not crash" do
+      assert {:ok, ["guides/graphql_schema.md"]} =
+               GraphqlMarkdown.generate(schema: "test/fixtures/schema.json", output_dir: "guides")
+
+      content = File.read!("guides/graphql_schema.md")
+      assert content =~ "## Subscriptions"
+      assert content =~ "### loginEvent"
+      assert content =~ "subscription LoginEvent {"
+    end
+
+    test "subscription root type is not listed as an object" do
+      assert {:ok, _} =
+               GraphqlMarkdown.generate(schema: "test/fixtures/schema.json", output_dir: "guides")
+
+      refute File.read!("guides/graphql_schema.md") =~ "### RootSubscriptionType"
+
+      assert {:ok, _} =
+               GraphqlMarkdown.generate(
+                 schema: "test/fixtures/schema.json",
+                 output_dir: "guides",
+                 multi_page: true
+               )
+
+      refute File.read!("guides/objects.md") =~ "## RootSubscriptionType"
+      assert File.read!("guides/subscriptions.md") =~ "## loginEvent"
+    end
+  end
 end

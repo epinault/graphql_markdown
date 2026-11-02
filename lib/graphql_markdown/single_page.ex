@@ -1,228 +1,167 @@
 defmodule GraphqlMarkdown.SinglePage do
   @moduledoc """
-  Single page generator from Graphql to Markdown
+  Single page generator from Graphql to Markdown.
+
+  Rendering is pure: `render_schema/2` returns the page content and never
+  touches the filesystem.
   """
   alias GraphqlMarkdown.MarkdownHelpers
   alias GraphqlMarkdown.OperationDetailsHelpers
-  alias GraphqlMarkdown.Renderer
   alias GraphqlMarkdown.Schema
 
-  @spec render_schema(GraphqlMarkdown.Schema.t(), keyword) :: :ok | {:error, :renderer_error}
+  @filename "graphql_schema.md"
+
+  @sections ~w(queries mutations subscriptions objects inputs enums scalars interfaces unions)
+
+  @doc """
+  Renders the whole schema into a single markdown page.
+
+  Returns a one-element list of `{filename, content}`.
+  """
+  @spec render_schema(Schema.t(), keyword()) :: [{String.t(), String.t()}]
   def render_schema(schema_details, options) do
-    dir = Keyword.get(options, :output_dir, ".")
-    filename = Path.join(dir, "graphql_schema.md")
+    lines = [
+      generate_title(options),
+      "",
+      generate_toc(schema_details, options),
+      generate_sections(schema_details)
+    ]
 
-    case Renderer.start_link(name: "single", filename: filename) do
-      {:ok, _pid} ->
-        generate_title(options)
-        render_newline()
-
-        unless options[:no_toc] do
-          generate_toc(schema_details, options)
-          render_newline()
-        end
-
-        generate_sections(schema_details)
-        Renderer.save(:single)
-        [filename]
-
-      _ ->
-        {:error, :renderer_error}
-    end
+    [{@filename, MarkdownHelpers.document(lines)}]
   end
 
   defp generate_title(options) do
     title = Keyword.get(options, :title, "Graphql Schema")
-    render(MarkdownHelpers.header(title, 1))
+    MarkdownHelpers.header(title, 1)
   end
 
-  defp generate_toc(_schema_details, toc: false), do: :ok
-
-  defp generate_toc(schema_details, _options) do
-    print_toc_type("queries", schema_details.queries)
-    print_toc_type("mutations", schema_details.mutations)
-    print_toc_type("subscriptions", schema_details.subscriptions)
-    print_toc_type("objects", schema_details.objects)
-    print_toc_type("inputs", schema_details.inputs)
-    print_toc_type("enums", schema_details.enums)
-    print_toc_type("scalars", schema_details.scalars)
-    print_toc_type("interfaces", schema_details.interfaces)
-    print_toc_type("unions", schema_details.unions)
+  defp generate_toc(schema_details, options) do
+    if options[:no_toc] do
+      []
+    else
+      [
+        Enum.map(@sections, fn section ->
+          toc_entries(section, Map.get(schema_details, String.to_existing_atom(section)))
+        end),
+        ""
+      ]
+    end
   end
 
-  defp print_toc_type(_, nil), do: ""
+  defp toc_entries(_, nil), do: []
 
-  defp print_toc_type(type_label, %{"fields" => fields} = _types)
+  defp toc_entries(type_label, %{"fields" => fields})
        when type_label in ["queries", "mutations", "subscriptions"] do
-    # render(
-    #   type_label
-    #   |> String.capitalize()
-    #   |> MarkdownHelpers.anchor()
-    #   |> MarkdownHelpers.list(1)
-    # )
-
-    # Enum.each(fields, fn field ->
-    #   render(
-    #     field["name"]
-    #     |> String.capitalize()
-    #     |> MarkdownHelpers.anchor()
-    #     |> MarkdownHelpers.list(2)
-    #   )
-    # end)
-
-    print_toc_type(type_label, fields)
+    toc_entries(type_label, fields)
   end
 
-  defp print_toc_type(type_label, types) do
-    render(
+  defp toc_entries(type_label, types) do
+    [
       type_label
       |> String.capitalize()
       |> MarkdownHelpers.anchor()
-      |> MarkdownHelpers.list(1)
-    )
-
-    Enum.each(types, fn type ->
-      render(
+      |> MarkdownHelpers.list(1),
+      Enum.map(types, fn type ->
         type["name"]
         |> MarkdownHelpers.anchor()
         |> MarkdownHelpers.list(2)
-      )
-    end)
+      end)
+    ]
   end
 
-  def generate_sections(schema_details) do
-    Enum.each(
+  defp generate_sections(schema_details) do
+    Enum.map(@sections, fn section_name ->
       [
-        "queries",
-        "mutations",
-        "subscriptions",
-        "objects",
-        "inputs",
-        "enums",
-        "scalars",
-        "interfaces",
-        "unions"
-      ],
-      fn section_name ->
         generate_section(
           section_name,
           Map.get(schema_details, String.to_existing_atom(section_name)),
           schema_details
-        )
-
-        render_newline()
-      end
-    )
+        ),
+        ""
+      ]
+    end)
   end
 
-  def generate_section(type, [], _schema_details) do
-    render(MarkdownHelpers.header(type, 2, true))
-    render_newline()
-    render("None")
-  end
-
-  def generate_section(type, nil, _schema_details) do
-    render(MarkdownHelpers.header(type, 2, true))
-    render_newline()
-    render("None")
+  defp generate_section(type, empty, _schema_details) when empty in [[], nil] do
+    [MarkdownHelpers.header(type, 2, true), "", "None"]
   end
 
   # Handles Mutations and Queries and Subscriptions
-  def generate_section(type, %{"fields" => fields} = _details, schema_details)
-      when type in ["queries", "mutations", "subscriptions"] do
-    render(MarkdownHelpers.header(type, 2, true))
-    render_newline()
+  defp generate_section(type, %{"fields" => fields}, schema_details)
+       when type in ["queries", "mutations", "subscriptions"] do
+    [
+      MarkdownHelpers.header(type, 2, true),
+      "",
+      Enum.map(fields, fn field ->
+        type_details =
+          field["type"]
+          |> Schema.field_type()
+          |> MarkdownHelpers.anchor()
 
-    Enum.each(fields, fn field ->
-      render(MarkdownHelpers.header(field["name"], 3))
-      render_newline()
-
-      type_details =
-        field["type"]
-        |> Schema.field_type()
-        |> MarkdownHelpers.anchor()
-
-      render("Type: #{type_details}")
-      render_newline()
-
-      generate_description(field["description"])
-
-      field["args"]
-      |> generate_data()
-      |> render_table(field: {}, description: {})
-
-      type
-      |> OperationDetailsHelpers.generate_operation_details(field, schema_details)
-      |> MarkdownHelpers.graphql_operation_code_block()
-      |> render()
-
-      render_newline()
-    end)
+        [
+          MarkdownHelpers.header(field["name"], 3),
+          "",
+          "Type: #{type_details}",
+          "",
+          generate_description(field["description"]),
+          field["args"] |> generate_data() |> table(field: {}, description: {}),
+          type
+          |> OperationDetailsHelpers.generate_operation_details(field, schema_details)
+          |> MarkdownHelpers.graphql_operation_code_block(),
+          ""
+        ]
+      end)
+    ]
   end
 
-  def generate_section(type, details, _schema_details) do
-    render(MarkdownHelpers.header(type, 2, true))
-    render_newline()
+  defp generate_section(type, details, _schema_details) do
+    [
+      MarkdownHelpers.header(type, 2, true),
+      "",
+      Enum.map(details, fn detail ->
+        [
+          MarkdownHelpers.header(detail["name"], 3),
+          "",
+          generate_description(detail["description"]),
+          generate_type_body(detail),
+          ""
+        ]
+      end)
+    ]
+  end
 
-    input_kind = Schema.input_kind()
-    scalar_kind = Schema.scalar_kind()
-    enum_kind = Schema.enum_kind()
-    union_kind = Schema.union_kind()
+  defp generate_type_body(%{"kind" => "INPUT_OBJECT"} = detail) do
+    detail["inputFields"] |> generate_data() |> table(field: {}, description: {})
+  end
 
-    Enum.each(details, fn detail ->
-      render(MarkdownHelpers.header(detail["name"], 3))
-      render_newline()
-      generate_description(detail["description"])
+  defp generate_type_body(%{"kind" => "SCALAR"}), do: []
 
-      case detail["kind"] do
-        ^input_kind ->
-          detail["inputFields"]
-          |> generate_data()
-          |> render_table(field: {}, description: {})
+  defp generate_type_body(%{"kind" => "ENUM"} = detail) do
+    detail["enumValues"]
+    |> Enum.map(fn enum -> [enum["name"], enum["description"]] end)
+    |> table(value: {}, description: {})
+  end
 
-        ^scalar_kind ->
-          :ok
+  defp generate_type_body(%{"kind" => "UNION"} = detail) do
+    ["Possible types:", "", generate_unions_possible_types(detail["possibleTypes"])]
+  end
 
-        ^enum_kind ->
-          detail["enumValues"]
-          |> Enum.map(fn enum -> [enum["name"], enum["description"]] end)
-          |> render_table(value: {}, description: {})
-
-        ^union_kind ->
-          render("Possible types:")
-          render_newline()
-
-          generate_unions_possible_types(detail["possibleTypes"])
-
-        _ ->
-          detail["fields"]
-          |> generate_data()
-          |> render_table(field: {}, description: {})
-      end
-
-      render_newline()
-    end)
+  defp generate_type_body(detail) do
+    detail["fields"] |> generate_data() |> table(field: {}, description: {})
   end
 
   defp generate_unions_possible_types(types) do
-    Enum.each(types, fn possible_type ->
-      render(
-        possible_type["name"]
-        |> MarkdownHelpers.link("objects.html##{String.downcase(possible_type["name"])}")
-        |> MarkdownHelpers.list(1)
-      )
+    Enum.map(types, fn possible_type ->
+      possible_type["name"]
+      |> MarkdownHelpers.link("objects.html##{String.downcase(possible_type["name"])}")
+      |> MarkdownHelpers.list(1)
     end)
   end
 
-  # Renders the description as its own paragraph. Nothing is emitted when the
-  # schema has no description, so the following block directly follows the
-  # header.
-  defp generate_description(nil), do: :ok
-
-  defp generate_description(description) do
-    render(description)
-    render_newline()
-  end
+  # The description is its own paragraph. Nothing is emitted when the schema
+  # has no description, so the following block directly follows the header.
+  defp generate_description(nil), do: []
+  defp generate_description(description), do: [description, ""]
 
   defp generate_data(fields) do
     Enum.map(fields, fn field ->
@@ -239,18 +178,6 @@ defmodule GraphqlMarkdown.SinglePage do
   end
 
   # A table with no rows is only a header, so it is skipped altogether.
-  defp render_table([], _columns), do: :ok
-
-  defp render_table(rows, columns) do
-    render(MarkdownHelpers.table(columns, rows))
-    render_newline()
-  end
-
-  defp render(text) do
-    Renderer.render(text, :single)
-  end
-
-  defp render_newline do
-    Renderer.render_newline(:single)
-  end
+  defp table([], _columns), do: []
+  defp table(rows, columns), do: [MarkdownHelpers.table(columns, rows), ""]
 end

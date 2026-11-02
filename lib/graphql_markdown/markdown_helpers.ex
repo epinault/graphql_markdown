@@ -81,6 +81,21 @@ defmodule GraphqlMarkdown.MarkdownHelpers do
     end
   end
 
+  @doc """
+  Joins a (possibly nested) list of lines into a document.
+
+  Every line is terminated by a newline; an empty string produces a blank
+  line. Nested lists are flattened, so builders can return lists of lines
+  freely, and `nil` entries are skipped.
+  """
+  @spec document([String.t() | nil | list()]) :: String.t()
+  def document(lines) do
+    lines
+    |> List.flatten()
+    |> Enum.reject(&is_nil/1)
+    |> Enum.map_join(&(&1 <> new_line()))
+  end
+
   @spec code(String.t()) :: String.t()
   def code(text), do: "`#{text}`"
 

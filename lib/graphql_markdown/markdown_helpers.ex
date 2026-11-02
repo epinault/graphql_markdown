@@ -124,17 +124,28 @@ defmodule GraphqlMarkdown.MarkdownHelpers do
     arguments_types = argument_types_string(args)
     arguments = operation_arguments_string(args)
 
-    return_fields = returned_fields(return_type)
+    selection_set = selection_set(return_type)
 
     """
     ```gql
     #{operation_type} #{capitalized_operation_name}#{arguments_types} {
-      #{operation_name}#{arguments} {#{return_fields}
-      }
+      #{operation_name}#{arguments}#{selection_set}
     }
     ```
     """
   end
+
+  # Leaf types (scalars and enums) must not carry a selection set, otherwise
+  # the generated operation is not valid GraphQL.
+  @spec selection_set(OperationDetailsHelpers.return_type()) :: String.t()
+  defp selection_set(%{kind: "NON_NULL", ofType: inner_type}), do: selection_set(inner_type)
+
+  defp selection_set(%{kind: kind} = return_type)
+       when kind in ~w(OBJECT LIST UNION INTERFACE) do
+    " {" <> returned_fields(return_type) <> "\n  }"
+  end
+
+  defp selection_set(_leaf_type), do: ""
 
   @spec capitalize_operation_name(String.t()) :: String.t()
   defp capitalize_operation_name(operation_name) do
@@ -173,10 +184,6 @@ defmodule GraphqlMarkdown.MarkdownHelpers do
   end
 
   @spec returned_fields(OperationDetailsHelpers.return_type()) :: String.t()
-  defp returned_fields(%{kind: "SCALAR"}), do: ""
-
-  defp returned_fields(%{kind: "ENUM"}), do: ""
-
   defp returned_fields(%{kind: kind} = return_type) when kind in ~w(OBJECT LIST) do
     fields = Map.get(return_type, :fields, [])
 
@@ -247,7 +254,4 @@ defmodule GraphqlMarkdown.MarkdownHelpers do
 
     shared_fields_string <> specific_types_string
   end
-
-  defp returned_fields(%{kind: "NON_NULL", ofType: inner_type}), do: returned_fields(inner_type)
-  defp returned_fields(%{kind: "NON_NULL"}), do: []
 end

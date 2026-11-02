@@ -186,8 +186,7 @@ defmodule GraphqlMarkdown.MarkdownHelpersTest do
         """
         ```gql
         query CurrentTime {
-          currentTime {
-          }
+          currentTime
         }
         ```
         """
@@ -210,8 +209,7 @@ defmodule GraphqlMarkdown.MarkdownHelpersTest do
         """
         ```gql
         query CurrentTime {
-          currentTime {
-          }
+          currentTime
         }
         ```
         """
@@ -235,8 +233,7 @@ defmodule GraphqlMarkdown.MarkdownHelpersTest do
         """
         ```gql
         mutation AuthenticateWithCode($code: String!) {
-          authenticateWithCode(code: $code) {
-          }
+          authenticateWithCode(code: $code)
         }
         ```
         """
@@ -293,8 +290,7 @@ defmodule GraphqlMarkdown.MarkdownHelpersTest do
         """
         ```gql
         query EmptyRequired {
-          emptyRequired {
-          }
+          emptyRequired
         }
         ```
         """

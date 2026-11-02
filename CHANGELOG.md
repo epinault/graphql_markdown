@@ -14,6 +14,17 @@
 
 * `GraphqlMarkdown.Renderer`. It was an internal GenServer used to stream lines to disk and was never part of the documented API
 
+### Fixed
+
+* Single-page generation crashed on schemas with a subscription root type ([#3](https://github.com/epinault/graphql_markdown/issues/3))
+* Subscriptions were missing from single-page output and the subscription root type was listed under Objects ([#4](https://github.com/epinault/graphql_markdown/issues/4))
+* Example operations were invalid GraphQL for scalar, enum, `Type!`, `[Type!]` and `[Type!]!` return types; scalars and enums no longer get an empty selection set ([#5](https://github.com/epinault/graphql_markdown/issues/5))
+* `mix graphql_gen_markdown` exited 0 silently on a missing, invalid or non-introspection schema file, and crashed when `-f` was omitted. It now fails with a readable message and prints the generated files on success ([#6](https://github.com/epinault/graphql_markdown/issues/6))
+* Titles and table-of-contents entries were lowercased after the first letter (`My API Docs` became `My api docs`, `userSsoDetails` became `Userssodetails`) ([#7](https://github.com/epinault/graphql_markdown/issues/7))
+* Descriptions containing newlines or `|` broke markdown tables; cells are now escaped ([#8](https://github.com/epinault/graphql_markdown/issues/8))
+* Object, interface and input descriptions were never rendered ([#9](https://github.com/epinault/graphql_markdown/issues/9))
+* Operations and types without fields rendered a header-only table, and the default-value sentence was glued to the description without a space ([#10](https://github.com/epinault/graphql_markdown/issues/10))
+
 ## 1.0.0 - 2026-10-29
 
 ### Changed

@@ -8,7 +8,7 @@ defmodule GraphqlMarkdown.MarkdownHelpers do
   def header(text, level, capitalize \\ false)
 
   def header(text, level, true) do
-    header(String.capitalize(text), level, false)
+    header(capitalize_first(text), level, false)
   end
 
   def header(text, level, _capitalize) do
@@ -19,11 +19,21 @@ defmodule GraphqlMarkdown.MarkdownHelpers do
   def list(text, level, capitalize \\ false)
 
   def list(text, level, true) do
-    list(String.capitalize(text), level, false)
+    list(capitalize_first(text), level, false)
   end
 
   def list(text, level, _capitalize) do
     "#{String.duplicate(" ", level * 2)}* #{text}"
+  end
+
+  # Unlike String.capitalize/1 this leaves the rest of the string untouched,
+  # so acronyms and camelCase names keep their casing.
+  @spec capitalize_first(String.t()) :: String.t()
+  def capitalize_first(""), do: ""
+
+  def capitalize_first(text) do
+    {first, rest} = String.split_at(text, 1)
+    String.upcase(first) <> rest
   end
 
   @spec anchor(String.t(), String.t() | nil) :: String.t()

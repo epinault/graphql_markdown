@@ -37,7 +37,28 @@ defmodule GraphqlMarkdownTest do
                {:ok, ["guides/graphql_schema.md"]}
 
       content = File.read!("guides/graphql_schema.md")
-      assert content =~ "# Other title"
+      assert content =~ "# Other Title"
+    end
+
+    test "keeps the user-supplied title verbatim, including acronyms" do
+      assert {:ok, _} =
+               GraphqlMarkdown.generate(
+                 schema: "test/fixtures/schema.json",
+                 output_dir: "guides",
+                 title: "My API Docs"
+               )
+
+      assert File.read!("guides/graphql_schema.md") =~ "# My API Docs\n"
+    end
+
+    test "table of contents keeps the original casing of field and type names" do
+      assert {:ok, _} =
+               GraphqlMarkdown.generate(schema: "test/fixtures/schema.json", output_dir: "guides")
+
+      content = File.read!("guides/graphql_schema.md")
+      assert content =~ "    * [userSsoDetails](#userssodetails)"
+      assert content =~ "    * [LoginResponseV2](#loginresponsev2)"
+      refute content =~ "Userssodetails"
     end
 
     test "convert schema to markdown as multipage" do

@@ -12,6 +12,9 @@
 * Multi-page output now includes an `index.md` with the title and a table of contents linking to every page and type, mirroring the single-page TOC. `-t` applies to it ([#20](https://github.com/epinault/graphql_markdown/issues/20))
 * `mix graphql_gen_markdown -o -` writes the single page to stdout so it can be piped. It is rejected with `-m` and `--check` ([#20](https://github.com/epinault/graphql_markdown/issues/20))
 
+* `--link-ext html|md|none` (`link_ext:` in the library) sets the extension of multi-page links, so the output works on GitHub, MkDocs, Docusaurus or Hugo and not only ExDoc. `html` stays the default ([#18](https://github.com/epinault/graphql_markdown/issues/18))
+* `--front-matter` (`front_matter: true`) starts every page with a YAML block holding its `title` ([#18](https://github.com/epinault/graphql_markdown/issues/18))
+
 ### Changed
 
 * `generate/1` and `render/1` return `{:error, :missing_schema}` instead of crashing when neither `:schema` nor `:schema_module` is given

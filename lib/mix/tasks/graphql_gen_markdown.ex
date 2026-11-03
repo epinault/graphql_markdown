@@ -21,6 +21,10 @@ defmodule Mix.Tasks.GraphqlGenMarkdown do
     -d, --depth             How many nested levels the example operations select. Default: 2
     --check                 Do not write anything; fail when the files in the output
                             directory differ from what would be generated
+    --link-ext              Extension of the links between multi-page files: html
+                            (default, for ExDoc), md (GitHub, MkDocs) or none (clean
+                            URLs, Docusaurus)
+    --front-matter          Start every page with a YAML block holding its title
 
 
   Examples
@@ -67,8 +71,12 @@ defmodule Mix.Tasks.GraphqlGenMarkdown do
     title: :string,
     no_toc: :boolean,
     depth: :integer,
-    check: :boolean
+    check: :boolean,
+    link_ext: :string,
+    front_matter: :boolean
   ]
+
+  @link_exts %{"html" => :html, "md" => :md, "none" => :none}
 
   @args_aliases [
     f: :schema,
@@ -79,12 +87,12 @@ defmodule Mix.Tasks.GraphqlGenMarkdown do
     d: :depth
   ]
 
-  @usage "usage: mix graphql_gen_markdown (-f path/to/schema.json | -s MyApp.Schema) [-o DIR] [-m] [-t TITLE] [--no-toc] [-d DEPTH] [--check]"
+  @usage "usage: mix graphql_gen_markdown (-f path/to/schema.json | -s MyApp.Schema) [-o DIR] [-m] [-t TITLE] [--no-toc] [-d DEPTH] [--link-ext html|md|none] [--front-matter] [--check]"
 
   @doc false
   def run(args) do
     {parsed_args, _} = OptionParser.parse!(args, aliases: @args_aliases, strict: @args)
-    options = schema_options(parsed_args)
+    options = parsed_args |> schema_options() |> link_ext_option()
 
     cond do
       options[:output_dir] == "-" -> print(options)
@@ -164,6 +172,15 @@ defmodule Mix.Tasks.GraphqlGenMarkdown do
     end
   end
 
+  # Known extensions become atoms; anything else is left for the library to
+  # reject, so that the error message comes from one place.
+  defp link_ext_option(options) do
+    case Keyword.fetch(options, :link_ext) do
+      {:ok, ext} -> Keyword.put(options, :link_ext, Map.get(@link_exts, ext, ext))
+      :error -> options
+    end
+  end
+
   # safe_concat only resolves modules that already exist, so a typo or an
   # uncompiled module is caught here rather than creating a new atom.
   defp schema_module(module_name) do
@@ -184,6 +201,9 @@ defmodule Mix.Tasks.GraphqlGenMarkdown do
 
   defp error_message(module, {:introspection_failed, result}),
     do: "Introspecting #{module} failed: #{inspect(result)}"
+
+  defp error_message(_path, {:invalid_link_ext, ext}),
+    do: "--link-ext must be one of html, md or none, got #{inspect(ext)}"
 
   defp error_message(_path, {:invalid_depth, depth}),
     do: "--depth must be a positive integer, got #{inspect(depth)}"

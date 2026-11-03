@@ -26,6 +26,7 @@ defmodule GraphqlMarkdown.SinglePage do
       struct!(Layout, [section_level: 2, link: &anchor/1] ++ Keyword.take(options, [:depth]))
 
     lines = [
+      Page.front_matter(Page.title_text(options), options),
       Page.title(options),
       "",
       toc(schema_details, options),

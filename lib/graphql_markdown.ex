@@ -16,6 +16,7 @@ defmodule GraphqlMarkdown do
           | {:not_a_schema, module()}
           | {:introspection_failed, term()}
           | {:invalid_depth, term()}
+          | {:invalid_link_ext, term()}
           | File.posix()
           | Jason.DecodeError.t()
 
@@ -45,10 +46,16 @@ defmodule GraphqlMarkdown do
       counting the operation's own selection set. Default: `2`. Must be a
       positive integer, otherwise `{:error, {:invalid_depth, value}}` is
       returned
+    * `:link_ext` - extension of the links between multi-page files:
+      `:html` (default, for ExDoc), `:md` (GitHub, MkDocs) or `:none`
+      (clean URLs, Docusaurus). Anything else returns
+      `{:error, {:invalid_link_ext, value}}`
+    * `:front_matter` - start every page with a YAML block holding its
+      `title`
   """
   @spec render(keyword()) :: {:ok, pages()} | {:error, error()}
   def render(options) do
-    with :ok <- validate_depth(options),
+    with :ok <- validate_options(options),
          {:ok, json} <- load_json(options),
          {:ok, schema} <- Schema.schema_from_json(json) do
       {:ok, schema |> render_schema(options) |> Map.new()}
@@ -64,7 +71,7 @@ defmodule GraphqlMarkdown do
   """
   @spec generate(keyword()) :: {:ok, [Path.t()]} | {:error, error()}
   def generate(options) do
-    with :ok <- validate_depth(options),
+    with :ok <- validate_options(options),
          {:ok, json} <- load_json(options),
          {:ok, schema} <- Schema.schema_from_json(json) do
       output_dir = Keyword.get(options, :output_dir, ".")
@@ -82,13 +89,18 @@ defmodule GraphqlMarkdown do
     end
   end
 
-  defp validate_depth(options) do
-    case Keyword.fetch(options, :depth) do
-      :error -> :ok
-      {:ok, depth} when is_integer(depth) and depth >= 1 -> :ok
-      {:ok, depth} -> {:error, {:invalid_depth, depth}}
+  defp validate_options(options) do
+    with :ok <- validate_depth(options[:depth]) do
+      validate_link_ext(options[:link_ext])
     end
   end
+
+  defp validate_depth(nil), do: :ok
+  defp validate_depth(depth) when is_integer(depth) and depth >= 1, do: :ok
+  defp validate_depth(depth), do: {:error, {:invalid_depth, depth}}
+
+  defp validate_link_ext(ext) when ext in [nil, :html, :md, :none], do: :ok
+  defp validate_link_ext(ext), do: {:error, {:invalid_link_ext, ext}}
 
   @typedoc """
   A file that `check/1` found out of date: it differs from the rendered

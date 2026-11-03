@@ -40,6 +40,46 @@ defmodule Mix.Tasks.GraphqlGenMarkdownTest do
     end
   end
 
+  describe "--link-ext and --front-matter" do
+    test "--link-ext md rewrites multi-page links", %{tmp_dir: dir} do
+      GraphqlGenMarkdown.run([
+        "-f",
+        "test/fixtures/return_types_schema.json",
+        "-o",
+        dir,
+        "-m",
+        "--link-ext",
+        "md"
+      ])
+
+      assert File.read!(Path.join(dir, "queries.md")) =~ "[Droid](objects.md#droid)"
+    end
+
+    test "raises a readable error for an unknown --link-ext" do
+      assert_raise Mix.Error, ~r/--link-ext must be one of html, md or none/, fn ->
+        GraphqlGenMarkdown.run([
+          "-f",
+          "test/fixtures/return_types_schema.json",
+          "--link-ext",
+          "foo"
+        ])
+      end
+    end
+
+    test "--front-matter adds a YAML block", %{tmp_dir: dir} do
+      GraphqlGenMarkdown.run([
+        "-f",
+        "test/fixtures/return_types_schema.json",
+        "-o",
+        dir,
+        "--front-matter"
+      ])
+
+      assert File.read!(Path.join(dir, "graphql_schema.md")) =~
+               ~r/\A---\ntitle: "Graphql Schema"\n---\n/
+    end
+  end
+
   describe "-o -" do
     import ExUnit.CaptureIO
 

@@ -18,6 +18,8 @@ defmodule Mix.Tasks.GraphqlGenMarkdown do
     -t, --title             Specify the page title for the generated file (Applies to single file only)
     --no-toc                Do not generate the table of content (Applies to single file only)
     -d, --depth             How many nested levels the example operations select. Default: 2
+    --check                 Do not write anything; fail when the files in the output
+                            directory differ from what would be generated
 
 
   Examples
@@ -41,6 +43,12 @@ defmodule Mix.Tasks.GraphqlGenMarkdown do
   mix graphql_gen_markdown -s MyApp.Schema -o guides
   ```
 
+  4. In CI, fail when the committed markdown is out of date
+
+  ```elixir
+  mix graphql_gen_markdown -s MyApp.Schema -o guides/graphql -m --check
+  ```
+
   """
   use Mix.Task
 
@@ -51,7 +59,8 @@ defmodule Mix.Tasks.GraphqlGenMarkdown do
     multi_page: :boolean,
     title: :string,
     no_toc: :boolean,
-    depth: :integer
+    depth: :integer,
+    check: :boolean
   ]
 
   @args_aliases [
@@ -63,17 +72,39 @@ defmodule Mix.Tasks.GraphqlGenMarkdown do
     d: :depth
   ]
 
-  @usage "usage: mix graphql_gen_markdown (-f path/to/schema.json | -s MyApp.Schema) [-o DIR] [-m] [-t TITLE] [--no-toc] [-d DEPTH]"
+  @usage "usage: mix graphql_gen_markdown (-f path/to/schema.json | -s MyApp.Schema) [-o DIR] [-m] [-t TITLE] [--no-toc] [-d DEPTH] [--check]"
 
   @doc false
   def run(args) do
     {parsed_args, _} = OptionParser.parse!(args, aliases: @args_aliases, strict: @args)
     options = schema_options(parsed_args)
 
+    if options[:check], do: check(options), else: generate(options)
+  end
+
+  defp generate(options) do
     case GraphqlMarkdown.generate(options) do
       {:ok, files} ->
         Mix.shell().info("Generated:\n" <> Enum.map_join(files, "\n", &("  " <> &1)))
         {:ok, files}
+
+      {:error, reason} ->
+        Mix.raise(error_message(schema_source(options), reason))
+    end
+  end
+
+  defp check(options) do
+    case GraphqlMarkdown.check(options) do
+      :ok ->
+        Mix.shell().info("Generated markdown is up to date.")
+        :ok
+
+      {:error, {:outdated, changes}} ->
+        Mix.raise(
+          "Generated markdown is out of date:\n" <>
+            Enum.map_join(changes, "\n", fn {path, status} -> "  #{path} (#{status})" end) <>
+            "\n\nRun mix graphql_gen_markdown without --check to update it."
+        )
 
       {:error, reason} ->
         Mix.raise(error_message(schema_source(options), reason))

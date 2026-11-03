@@ -40,6 +40,45 @@ defmodule Mix.Tasks.GraphqlGenMarkdownTest do
     end
   end
 
+  describe "--check" do
+    test "reports up-to-date files and writes nothing", %{tmp_dir: dir} do
+      GraphqlGenMarkdown.run(["-f", "test/fixtures/schema.json", "-o", dir, "-m"])
+      before = Enum.sort(File.ls!(dir))
+
+      assert :ok =
+               GraphqlGenMarkdown.run([
+                 "-f",
+                 "test/fixtures/schema.json",
+                 "-o",
+                 dir,
+                 "-m",
+                 "--check"
+               ])
+
+      assert_received {:mix_shell, :info, ["Generated:" <> _]}
+      assert_received {:mix_shell, :info, [message]}
+      assert message =~ "up to date"
+      assert Enum.sort(File.ls!(dir)) == before
+    end
+
+    test "raises listing the outdated files and leaves them untouched", %{tmp_dir: dir} do
+      GraphqlGenMarkdown.run(["-f", "test/fixtures/schema.json", "-o", dir, "-m"])
+      File.write!(Path.join(dir, "queries.md"), "stale")
+      File.rm!(Path.join(dir, "unions.md"))
+
+      error =
+        assert_raise Mix.Error, fn ->
+          GraphqlGenMarkdown.run(["-f", "test/fixtures/schema.json", "-o", dir, "-m", "--check"])
+        end
+
+      assert error.message =~ "out of date"
+      assert error.message =~ "#{Path.join(dir, "queries.md")} (changed)"
+      assert error.message =~ "#{Path.join(dir, "unions.md")} (missing)"
+      assert File.read!(Path.join(dir, "queries.md")) == "stale"
+      refute File.exists?(Path.join(dir, "unions.md"))
+    end
+  end
+
   test "raises when both --schema and --schema-module are given" do
     assert_raise Mix.Error, ~r/either --schema.*or --schema-module/i, fn ->
       GraphqlGenMarkdown.run(["-f", "schema.json", "-s", "GraphqlMarkdown.TestSchema"])

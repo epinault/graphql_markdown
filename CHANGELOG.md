@@ -7,6 +7,7 @@
 * `--schema-module` / `-s` on `mix graphql_gen_markdown`, and `schema_module:` on `GraphqlMarkdown.generate/1` and `render/1`, introspect an Absinthe schema in-process instead of requiring an introspection JSON file. Absinthe is an optional dependency ([#15](https://github.com/epinault/graphql_markdown/issues/15))
 
 * Example operations recurse into object, interface and union return types and select their scalar and enum fields, so they are valid, copy-pasteable GraphQL. `--depth` / `-d` on the mix task and `depth:` on `generate/1` and `render/1` control how deep (default 2). Types already selected further up the path are skipped, which keeps recursive types such as `friends: [Character]` finite ([#16](https://github.com/epinault/graphql_markdown/issues/16))
+* `--check` on `mix graphql_gen_markdown`, and `GraphqlMarkdown.check/1`, compare the rendered markdown with the files in the output directory without writing, and fail listing the changed or missing files. Use it in CI to keep committed docs in sync with the schema ([#19](https://github.com/epinault/graphql_markdown/issues/19))
 
 ### Changed
 

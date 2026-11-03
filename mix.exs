@@ -10,7 +10,7 @@ defmodule GraphqlMarkdown.MixProject do
       name: "Graphql Markdown",
       description: "A simple GraphQL JSON Schema to  Markdown generator",
       version: @version,
-      elixir: "~> 1.14",
+      elixir: "~> 1.15",
       source_url: @project_url,
       homepage_url: @project_url,
       start_permanent: Mix.env() == :prod,

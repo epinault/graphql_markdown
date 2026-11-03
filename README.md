@@ -5,7 +5,7 @@ Converts a JSON Graphql Schema to Markdown
 ## Installation
 
 Add `graphql_markdown` to your list of dependencies in `mix.exs`. It requires
-Elixir 1.15 or later:
+Elixir 1.16 or later:
 
 ```elixir
 def deps do

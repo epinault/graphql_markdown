@@ -9,6 +9,7 @@
 ### Changed
 
 * `generate/1` and `render/1` return `{:error, :missing_schema}` instead of crashing when neither `:schema` nor `:schema_module` is given
+* Minimum Elixir version is now 1.16
 
 ## 1.1.0 - 2026-11-03
 

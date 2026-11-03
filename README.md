@@ -91,18 +91,41 @@ defmodule Azeroth.MixProject do
   defp aliases do
   [
     docs: [
-      "absinthe.schema.json",
-      "graphql_gen_markdown -f schema.json -o guides/graphql -m",
+      "graphql_gen_markdown -s YourApp.GraphQL.Schema -o guides/graphql -m",
       "docs"
     ],...
   ]
 ```
 
+If you would rather keep an introspection JSON file around, generate it first
+and point the task at it instead:
+
+```elixir
+    docs: [
+      "absinthe.schema.json",
+      "graphql_gen_markdown -f schema.json -o guides/graphql -m",
+      "docs"
+    ],
+```
+
 Make sure the absinthe schema is specified or generated with that name. Or add to your config.exs:
 
 ```elixir
-config :absinthe, schema: YouApp.GraphQL.Schema
+config :absinthe, schema: YourApp.GraphQL.Schema
 ```
+
+## Using it with Absinthe
+
+If your schema is an Absinthe module you can skip the intermediate JSON file
+and introspect it in-process:
+
+```shell
+mix graphql_gen_markdown -s MyApp.Schema -o guides
+```
+
+or, from code, `GraphqlMarkdown.generate(schema_module: MyApp.Schema, output_dir: "guides")`.
+Absinthe is an optional dependency of this package, so it only works when
+`absinthe` is already in your `mix.exs`.
 
 ## Using it as a library
 

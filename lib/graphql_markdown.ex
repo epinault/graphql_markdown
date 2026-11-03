@@ -9,7 +9,14 @@ defmodule GraphqlMarkdown do
   @typedoc "Rendered pages, keyed by filename (for example `\"graphql_schema.md\"`)."
   @type pages :: %{String.t() => String.t()}
 
-  @type error :: :invalid_schema | File.posix() | Jason.DecodeError.t()
+  @type error ::
+          :missing_schema
+          | :invalid_schema
+          | :absinthe_not_available
+          | {:not_a_schema, module()}
+          | {:introspection_failed, term()}
+          | File.posix()
+          | Jason.DecodeError.t()
 
   @doc """
   Renders the markdown in memory and returns it keyed by filename.
@@ -18,6 +25,21 @@ defmodule GraphqlMarkdown do
   pipeline or to inspect the output in tests.
 
   Accepts the same options as `generate/1` except `:output_dir`.
+
+  ## Options
+
+  The schema comes from exactly one of:
+
+    * `:schema` - path to an introspection JSON file, as written by
+      `mix absinthe.schema.json` or any GraphQL tooling
+    * `:schema_module` - an Absinthe schema module, introspected in-process.
+      Requires `absinthe` in your dependencies
+
+  Rendering options:
+
+    * `:multi_page` - one file per section instead of a single page
+    * `:title` - title of the single page. Default: `"Graphql Schema"`
+    * `:no_toc` - leave the table of contents out of the single page
   """
   @spec render(keyword()) :: {:ok, pages()} | {:error, error()}
   def render(options) do
@@ -54,9 +76,45 @@ defmodule GraphqlMarkdown do
   end
 
   defp load_json(options) do
-    with {:ok, body} <- File.read(options[:schema]) do
+    case {options[:schema], options[:schema_module]} do
+      {nil, nil} -> {:error, :missing_schema}
+      {path, nil} -> read_json(path)
+      {_path, module} -> introspect(module)
+    end
+  end
+
+  defp read_json(path) do
+    with {:ok, body} <- File.read(path) do
       Jason.decode(body)
     end
+  end
+
+  # Absinthe is an optional dependency, so it is called through apply/3:
+  # consumers without it compile without an undefined-function warning and
+  # get a clear error instead of an UndefinedFunctionError.
+  defp introspect(module) do
+    cond do
+      not absinthe_available?() ->
+        {:error, :absinthe_not_available}
+
+      not absinthe_schema?(module) ->
+        {:error, {:not_a_schema, module}}
+
+      true ->
+        # credo:disable-for-next-line Credo.Check.Refactor.Apply
+        case apply(Absinthe.Schema, :introspect, [module]) do
+          {:ok, %{data: data}} -> {:ok, %{"data" => data}}
+          other -> {:error, {:introspection_failed, other}}
+        end
+    end
+  end
+
+  defp absinthe_available? do
+    Code.ensure_loaded?(Absinthe.Schema) and function_exported?(Absinthe.Schema, :introspect, 1)
+  end
+
+  defp absinthe_schema?(module) do
+    Code.ensure_loaded?(module) and function_exported?(module, :__absinthe_types__, 0)
   end
 
   defp render_schema(schema, options) do

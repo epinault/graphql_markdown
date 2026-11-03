@@ -46,6 +46,44 @@ defmodule GraphqlMarkdown.Page do
   @spec sections() :: [String.t()]
   def sections, do: @sections
 
+  @doc "The document title: the `:title` option or `\"Graphql Schema\"`."
+  @spec title(keyword()) :: String.t()
+  def title(options) do
+    MarkdownHelpers.header(Keyword.get(options, :title, "Graphql Schema"), 1)
+  end
+
+  @doc """
+  The table of contents: one list item per section that exists in the
+  schema, with a nested item per operation or type in it.
+
+  `link` receives the section name and `nil` for the section itself, or the
+  section name and the entry's name, and returns the URL to link to.
+  """
+  @spec toc(Schema.t(), (String.t(), String.t() | nil -> String.t())) :: lines()
+  def toc(schema_details, link) do
+    Enum.map(@sections, fn section ->
+      case Map.get(schema_details, String.to_existing_atom(section)) do
+        nil -> []
+        %{"fields" => fields} when section in @operations -> toc_entries(section, fields, link)
+        types -> toc_entries(section, types, link)
+      end
+    end)
+  end
+
+  defp toc_entries(section, entries, link) do
+    [
+      section
+      |> String.capitalize()
+      |> MarkdownHelpers.link(link.(section, nil))
+      |> MarkdownHelpers.list(1),
+      Enum.map(entries, fn entry ->
+        entry["name"]
+        |> MarkdownHelpers.link(link.(section, entry["name"]))
+        |> MarkdownHelpers.list(2)
+      end)
+    ]
+  end
+
   @doc """
   Renders one section: its heading followed by one entry per operation or
   type, or `None` when the schema has nothing in that section.

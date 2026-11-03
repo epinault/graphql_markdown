@@ -69,6 +69,7 @@ mix graphql_gen_markdown -f ./schema.json -m
 
 it will generate the following files in your current folder:
 
+  ./index.md
   ./queries.md
   ./mutations.md
   ./subscriptions.md
@@ -78,6 +79,18 @@ it will generate the following files in your current folder:
   ./scalars.md
   ./interfaces.md
   ./unions.md
+
+`index.md` holds the title and a table of contents linking to every page and
+type, so ExDoc users can list it as the first extra.
+
+### Writing to stdout
+
+Pass `-o -` to print the single page instead of writing a file, for example to
+copy it or to pipe it into another tool:
+
+```shell
+mix graphql_gen_markdown -f ./schema.json -o - | pbcopy
+```
 
 ## Integrate with ExDoc and Absinthe
 
@@ -89,6 +102,7 @@ defmodule Azeroth.MixProject do
 
   # this is needed because the file are generated but if you run mix docs, Mix will check the existence of files first. so have to work around that
   @graphql_files [
+    "guides/graphql/index.md",
     "guides/graphql/enums.md",
     "guides/graphql/inputs.md",
     "guides/graphql/interfaces.md",

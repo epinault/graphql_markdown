@@ -47,6 +47,8 @@ None
 
 An autonomous mechanical character.
 
+Implements: [Character](#character)
+
 | field | description |
 | ----- | ----------- |
 | `name` ( [String](#string) ) |  |
@@ -85,6 +87,9 @@ Something with a name, human or not.
 | ----- | ----------- |
 | `name` ( [String](#string) ) |  |
 
+Implemented by:
+
+  * [Droid](#droid)
 
 
 ## Unions

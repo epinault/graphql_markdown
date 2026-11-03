@@ -5,6 +5,9 @@
 ### Added
 
 * `GraphqlMarkdown.render/1` renders the markdown in memory and returns it keyed by filename, without writing to disk
+* Deprecated fields and enum values are struck through and their reason is appended to the description; a deprecated operation gets a `Deprecated` paragraph ([#17](https://github.com/epinault/graphql_markdown/issues/17))
+* Objects list the interfaces they implement (`Implements: [Character](#character)`) and interfaces list their implementers under `Implemented by:` ([#17](https://github.com/epinault/graphql_markdown/issues/17))
+* Arguments of object and interface fields are rendered inline in SDL syntax, for example `friends(first: Int = 10, after: String)` ([#17](https://github.com/epinault/graphql_markdown/issues/17))
 
 ### Changed
 

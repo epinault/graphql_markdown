@@ -64,6 +64,7 @@ defmodule GraphqlMarkdown.Page do
         "",
         "Type: " <> type_link(field["type"], Schema.field_type(field["type"]), layout),
         "",
+        deprecation(field),
         description(field["description"]),
         field["args"] |> field_rows(layout) |> table(field: {}, description: {}),
         name
@@ -94,7 +95,7 @@ defmodule GraphqlMarkdown.Page do
 
   defp type_body(%{"kind" => "ENUM"} = type, _layout) do
     type["enumValues"]
-    |> Enum.map(fn value -> [value["name"], value["description"]] end)
+    |> Enum.map(fn value -> [strike(value["name"], value), description_cell(value)] end)
     |> table(value: {}, description: {})
   end
 
@@ -102,8 +103,31 @@ defmodule GraphqlMarkdown.Page do
     ["Possible types:", "", possible_types(type["possibleTypes"], layout)]
   end
 
+  defp type_body(%{"kind" => "INTERFACE"} = type, layout) do
+    [
+      type["fields"] |> field_rows(layout) |> table(field: {}, description: {}),
+      implemented_by(type["possibleTypes"], layout)
+    ]
+  end
+
   defp type_body(type, layout) do
-    type["fields"] |> field_rows(layout) |> table(field: {}, description: {})
+    [
+      implements(type["interfaces"], layout),
+      type["fields"] |> field_rows(layout) |> table(field: {}, description: {})
+    ]
+  end
+
+  defp implements(interfaces, _layout) when interfaces in [[], nil], do: []
+
+  defp implements(interfaces, layout) do
+    links = Enum.map_join(interfaces, ", ", &type_link(&1, &1["name"], layout))
+    ["Implements: " <> links, ""]
+  end
+
+  defp implemented_by(types, _layout) when types in [[], nil], do: []
+
+  defp implemented_by(types, layout) do
+    ["Implemented by:", "", possible_types(types, layout)]
   end
 
   defp possible_types(types, layout) do
@@ -128,11 +152,44 @@ defmodule GraphqlMarkdown.Page do
       type_details = type_link(field["type"], Schema.full_field_type(field["type"]), layout)
 
       [
-        MarkdownHelpers.code(field["name"]) <> " ( " <> type_details <> " )",
-        MarkdownHelpers.field_description(field["description"], field["defaultValue"])
+        strike(MarkdownHelpers.code(signature(field)), field) <> " ( " <> type_details <> " )",
+        description_cell(field)
       ]
     end)
   end
+
+  # Fields that take arguments show them inline, in SDL syntax:
+  # `friends(first: Int = 10, after: String)`.
+  defp signature(%{"args" => [_ | _] = args} = field) do
+    field["name"] <> "(" <> Enum.map_join(args, ", ", &argument/1) <> ")"
+  end
+
+  defp signature(field), do: field["name"]
+
+  defp argument(%{"defaultValue" => nil} = arg) do
+    arg["name"] <> ": " <> Schema.full_field_type(arg["type"])
+  end
+
+  defp argument(arg), do: argument(%{arg | "defaultValue" => nil}) <> " = " <> arg["defaultValue"]
+
+  # The description column: description, default value and deprecation
+  # notice, whichever are present.
+  defp description_cell(field) do
+    MarkdownHelpers.sentences([
+      field["description"],
+      MarkdownHelpers.default_value(field["defaultValue"]),
+      MarkdownHelpers.deprecation(field)
+    ])
+  end
+
+  defp strike(text, %{"isDeprecated" => true}), do: "~~" <> text <> "~~"
+  defp strike(text, _field), do: text
+
+  # A deprecated operation gets its notice as a paragraph of its own.
+  defp deprecation(%{"isDeprecated" => true} = field),
+    do: [MarkdownHelpers.deprecation(field), ""]
+
+  defp deprecation(_field), do: []
 
   # A table with no rows is only a header, so it is skipped altogether.
   defp table([], _columns), do: []

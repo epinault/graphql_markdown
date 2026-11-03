@@ -2,6 +2,8 @@
 
 ## Droid
 
+Implements: [Character](interfaces.html#character)
+
 | field | description |
 | ----- | ----------- |
 | `id` ( [ID](scalars.html#id) ) |  |
@@ -17,6 +19,8 @@
 
 
 ## Human
+
+Implements: [Character](interfaces.html#character)
 
 | field | description |
 | ----- | ----------- |

@@ -10,7 +10,7 @@ Elixir 1.16 or later:
 ```elixir
 def deps do
   [
-    {:graphql_markdown, "~> 1.1"}
+    {:graphql_markdown, "~> 1.2"}
   ]
 end
 ```

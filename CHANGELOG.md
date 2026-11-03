@@ -1,20 +1,16 @@
 # Changelog
 
-## Unreleased
+## 1.2.0 - 2026-11-03
 
 ### Added
 
 * `--schema-module` / `-s` on `mix graphql_gen_markdown`, and `schema_module:` on `GraphqlMarkdown.generate/1` and `render/1`, introspect an Absinthe schema in-process instead of requiring an introspection JSON file. Absinthe is an optional dependency ([#15](https://github.com/epinault/graphql_markdown/issues/15))
-
 * Example operations recurse into object, interface and union return types and select their scalar and enum fields, so they are valid, copy-pasteable GraphQL. `--depth` / `-d` on the mix task and `depth:` on `generate/1` and `render/1` control how deep (default 2). Types already selected further up the path are skipped, which keeps recursive types such as `friends: [Character]` finite ([#16](https://github.com/epinault/graphql_markdown/issues/16))
 * `--check` on `mix graphql_gen_markdown`, and `GraphqlMarkdown.check/1`, compare the rendered markdown with the files in the output directory without writing, and fail listing the changed or missing files. Use it in CI to keep committed docs in sync with the schema ([#19](https://github.com/epinault/graphql_markdown/issues/19))
-
 * Multi-page output now includes an `index.md` with the title and a table of contents linking to every page and type, mirroring the single-page TOC. `-t` applies to it ([#20](https://github.com/epinault/graphql_markdown/issues/20))
 * `mix graphql_gen_markdown -o -` writes the single page to stdout so it can be piped. It is rejected with `-m` and `--check` ([#20](https://github.com/epinault/graphql_markdown/issues/20))
-
 * `--link-ext html|md|none` (`link_ext:` in the library) sets the extension of multi-page links, so the output works on GitHub, MkDocs, Docusaurus or Hugo and not only ExDoc. `html` stays the default ([#18](https://github.com/epinault/graphql_markdown/issues/18))
 * `--front-matter` (`front_matter: true`) starts every page with a YAML block holding its `title` ([#18](https://github.com/epinault/graphql_markdown/issues/18))
-
 * `--backlinks` (`backlinks: true`) ends every object, input, enum, interface and union with `Returned by` (operations whose return type is this type) and `Used by` (types and operations referencing it in a field or argument) lists ([#21](https://github.com/epinault/graphql_markdown/issues/21))
 
 ### Changed

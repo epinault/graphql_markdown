@@ -21,7 +21,7 @@ defmodule GraphqlMarkdown.RenderTest do
       assert {:ok, pages} = GraphqlMarkdown.render(schema: @schema, multi_page: true)
 
       assert Enum.sort(Map.keys(pages)) ==
-               ~w(enums.md inputs.md interfaces.md mutations.md objects.md queries.md scalars.md subscriptions.md unions.md)
+               ~w(enums.md index.md inputs.md interfaces.md mutations.md objects.md queries.md scalars.md subscriptions.md unions.md)
 
       assert pages["queries.md"] =~ "# Queries"
     end

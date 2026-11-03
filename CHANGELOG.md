@@ -9,6 +9,9 @@
 * Example operations recurse into object, interface and union return types and select their scalar and enum fields, so they are valid, copy-pasteable GraphQL. `--depth` / `-d` on the mix task and `depth:` on `generate/1` and `render/1` control how deep (default 2). Types already selected further up the path are skipped, which keeps recursive types such as `friends: [Character]` finite ([#16](https://github.com/epinault/graphql_markdown/issues/16))
 * `--check` on `mix graphql_gen_markdown`, and `GraphqlMarkdown.check/1`, compare the rendered markdown with the files in the output directory without writing, and fail listing the changed or missing files. Use it in CI to keep committed docs in sync with the schema ([#19](https://github.com/epinault/graphql_markdown/issues/19))
 
+* Multi-page output now includes an `index.md` with the title and a table of contents linking to every page and type, mirroring the single-page TOC. `-t` applies to it ([#20](https://github.com/epinault/graphql_markdown/issues/20))
+* `mix graphql_gen_markdown -o -` writes the single page to stdout so it can be piped. It is rejected with `-m` and `--check` ([#20](https://github.com/epinault/graphql_markdown/issues/20))
+
 ### Changed
 
 * `generate/1` and `render/1` return `{:error, :missing_schema}` instead of crashing when neither `:schema` nor `:schema_module` is given

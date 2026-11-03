@@ -14,8 +14,9 @@ defmodule Mix.Tasks.GraphqlGenMarkdown do
     -s, --schema-module     Absinthe schema module to introspect in-process
                             (requires absinthe in your deps). Use one of -f or -s
     -o, --output-dir        Where to output the files. Default: [Current Directory]
+                            Use - to write a single page to stdout instead
     -m, --multi-page        Generate each type in a separate file. Default: [single page format]
-    -t, --title             Specify the page title for the generated file (Applies to single file only)
+    -t, --title             Specify the page title for the generated file (Applies to single file and index.md)
     --no-toc                Do not generate the table of content (Applies to single file only)
     -d, --depth             How many nested levels the example operations select. Default: 2
     --check                 Do not write anything; fail when the files in the output
@@ -43,7 +44,13 @@ defmodule Mix.Tasks.GraphqlGenMarkdown do
   mix graphql_gen_markdown -s MyApp.Schema -o guides
   ```
 
-  4. In CI, fail when the committed markdown is out of date
+  4. Write the single page to stdout, for example to copy it
+
+  ```elixir
+  mix graphql_gen_markdown -f myschema.json -o - | pbcopy
+  ```
+
+  5. In CI, fail when the committed markdown is out of date
 
   ```elixir
   mix graphql_gen_markdown -s MyApp.Schema -o guides/graphql -m --check
@@ -79,7 +86,32 @@ defmodule Mix.Tasks.GraphqlGenMarkdown do
     {parsed_args, _} = OptionParser.parse!(args, aliases: @args_aliases, strict: @args)
     options = schema_options(parsed_args)
 
-    if options[:check], do: check(options), else: generate(options)
+    cond do
+      options[:output_dir] == "-" -> print(options)
+      options[:check] -> check(options)
+      true -> generate(options)
+    end
+  end
+
+  # Nothing but the page goes to stdout, so that the output can be piped.
+  defp print(options) do
+    if options[:multi_page] do
+      Mix.raise(
+        "-o - writes a single page to stdout and cannot be combined with --multi-page (-m)."
+      )
+    end
+
+    if options[:check],
+      do: Mix.raise("-o - writes to stdout and cannot be combined with --check.")
+
+    case GraphqlMarkdown.render(options) do
+      {:ok, pages} ->
+        pages |> Map.values() |> Enum.each(&IO.write/1)
+        :ok
+
+      {:error, reason} ->
+        Mix.raise(error_message(schema_source(options), reason))
+    end
   end
 
   defp generate(options) do

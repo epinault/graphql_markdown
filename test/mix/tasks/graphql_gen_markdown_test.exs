@@ -40,6 +40,34 @@ defmodule Mix.Tasks.GraphqlGenMarkdownTest do
     end
   end
 
+  describe "-o -" do
+    import ExUnit.CaptureIO
+
+    test "writes the single page to stdout and nothing to disk" do
+      output =
+        capture_io(fn ->
+          assert :ok = GraphqlGenMarkdown.run(["-f", "test/fixtures/schema.json", "-o", "-"])
+        end)
+
+      assert String.starts_with?(output, "# Graphql Schema\n")
+      assert output =~ "## Queries"
+      refute_received {:mix_shell, :info, _}
+      refute File.exists?("-")
+    end
+
+    test "cannot be combined with multi-page output" do
+      assert_raise Mix.Error, ~r/-o - .*--multi-page/, fn ->
+        GraphqlGenMarkdown.run(["-f", "test/fixtures/schema.json", "-o", "-", "-m"])
+      end
+    end
+
+    test "cannot be combined with --check" do
+      assert_raise Mix.Error, ~r/-o - .*--check/, fn ->
+        GraphqlGenMarkdown.run(["-f", "test/fixtures/schema.json", "-o", "-", "--check"])
+      end
+    end
+  end
+
   describe "--check" do
     test "reports up-to-date files and writes nothing", %{tmp_dir: dir} do
       GraphqlGenMarkdown.run(["-f", "test/fixtures/schema.json", "-o", dir, "-m"])

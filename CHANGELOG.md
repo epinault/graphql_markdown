@@ -6,9 +6,13 @@
 
 * `--schema-module` / `-s` on `mix graphql_gen_markdown`, and `schema_module:` on `GraphqlMarkdown.generate/1` and `render/1`, introspect an Absinthe schema in-process instead of requiring an introspection JSON file. Absinthe is an optional dependency ([#15](https://github.com/epinault/graphql_markdown/issues/15))
 
+* Example operations recurse into object, interface and union return types and select their scalar and enum fields, so they are valid, copy-pasteable GraphQL. `--depth` / `-d` on the mix task and `depth:` on `generate/1` and `render/1` control how deep (default 2). Types already selected further up the path are skipped, which keeps recursive types such as `friends: [Character]` finite ([#16](https://github.com/epinault/graphql_markdown/issues/16))
+
 ### Changed
 
 * `generate/1` and `render/1` return `{:error, :missing_schema}` instead of crashing when neither `:schema` nor `:schema_module` is given
+* Example operations no longer contain empty selection sets (`owner {\n}` or `... on Human {\n}`), which were invalid GraphQL. A nested field with nothing selectable within the depth is left out, and an operation with nothing selectable asks for `__typename`. Interfaces now also select `__typename`, like unions already did
+* `GraphqlMarkdown.OperationDetailsHelpers.generate_operation_details/4` returns the selection set as a tree under `selections`; `return_type` only holds the unwrapped `name` and `kind`
 * Minimum Elixir version is now 1.16
 
 ## 1.1.0 - 2026-11-03

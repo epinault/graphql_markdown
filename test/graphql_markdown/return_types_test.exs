@@ -24,6 +24,7 @@ defmodule GraphqlMarkdown.ReturnTypesTest do
                id
                name
                owner {
+                 name
                }
              }
            }
@@ -39,6 +40,7 @@ defmodule GraphqlMarkdown.ReturnTypesTest do
                id
                name
                owner {
+                 name
                }
              }
            }
@@ -93,8 +95,14 @@ defmodule GraphqlMarkdown.ReturnTypesTest do
              searchResults {
                __typename
                ... on Droid {
+                 id
+                 name
+                 owner {
+                   name
+                 }
                }
                ... on Human {
+                 name
                }
              }
            }

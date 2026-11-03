@@ -103,13 +103,8 @@ defmodule GraphqlMarkdown.MarkdownHelpersTest do
         arguments: [%{name: "emailOrPhone", required: true, type: "String"}],
         operation_name: "generateLoginCode",
         operation_type: "mutation",
-        return_type: %{
-          kind: "OBJECT",
-          name: "GenerateLoginCodeResponse",
-          fields: [
-            %{name: "processed", type: "SCALAR"}
-          ]
-        }
+        return_type: %{kind: "OBJECT", name: "GenerateLoginCodeResponse"},
+        selections: [%{name: "processed", selections: []}]
       }
 
       expected_text =
@@ -134,14 +129,8 @@ defmodule GraphqlMarkdown.MarkdownHelpersTest do
         ],
         operation_name: "login",
         operation_type: "mutation",
-        return_type: %{
-          kind: "OBJECT",
-          name: "LoginResponse",
-          fields: [
-            %{name: "idToken", type: "SCALAR"},
-            %{name: "refreshToken", type: "SCALAR"}
-          ]
-        }
+        return_type: %{kind: "OBJECT", name: "LoginResponse"},
+        selections: [%{name: "idToken", selections: []}, %{name: "refreshToken", selections: []}]
       }
 
       expected_text =
@@ -159,21 +148,22 @@ defmodule GraphqlMarkdown.MarkdownHelpersTest do
       assert MarkdownHelpers.graphql_operation_code_block(operation_details) == expected_text
     end
 
-    test "returns an empty object for an object return type" do
+    test "indents nested selections two spaces per level" do
       operation_details = %{
-        arguments: [
-          %{name: "refreshToken", required: true, type: "String"}
-        ],
+        arguments: [%{name: "refreshToken", required: true, type: "String"}],
         operation_name: "refreshIdToken",
         operation_type: "mutation",
-        return_type: %{
-          kind: "OBJECT",
-          name: "RefreshIdTokenResponse",
-          fields: [
-            %{name: "idToken", type: "SCALAR"},
-            %{name: "userSsoDetails", type: "OBJECT"}
-          ]
-        }
+        return_type: %{kind: "OBJECT", name: "RefreshIdTokenResponse"},
+        selections: [
+          %{name: "idToken", selections: []},
+          %{
+            name: "userSsoDetails",
+            selections: [
+              %{name: "domain", selections: []},
+              %{name: "organisation", selections: [%{name: "name", selections: []}]}
+            ]
+          }
+        ]
       }
 
       expected_text =
@@ -183,6 +173,43 @@ defmodule GraphqlMarkdown.MarkdownHelpersTest do
           refreshIdToken(refreshToken: $refreshToken) {
             idToken
             userSsoDetails {
+              domain
+              organisation {
+                name
+              }
+            }
+          }
+        }
+        ```
+        """
+
+      assert MarkdownHelpers.graphql_operation_code_block(operation_details) == expected_text
+    end
+
+    test "renders inline fragments for possible types" do
+      operation_details = %{
+        arguments: [],
+        operation_name: "search",
+        operation_type: "query",
+        return_type: %{kind: "UNION", name: "SearchResult"},
+        selections: [
+          %{name: "__typename", selections: []},
+          %{on: "Droid", selections: [%{name: "id", selections: []}]},
+          %{on: "Human", selections: [%{name: "name", selections: []}]}
+        ]
+      }
+
+      expected_text =
+        """
+        ```gql
+        query Search {
+          search {
+            __typename
+            ... on Droid {
+              id
+            }
+            ... on Human {
+              name
             }
           }
         }
@@ -197,10 +224,8 @@ defmodule GraphqlMarkdown.MarkdownHelpersTest do
         arguments: [],
         operation_name: "currentTime",
         operation_type: "query",
-        return_type: %{
-          kind: "SCALAR",
-          name: "String"
-        }
+        return_type: %{kind: "SCALAR", name: "String"},
+        selections: []
       }
 
       expected_text =
@@ -215,39 +240,13 @@ defmodule GraphqlMarkdown.MarkdownHelpersTest do
       assert MarkdownHelpers.graphql_operation_code_block(operation_details) == expected_text
     end
 
-    test "does not include return fields when the return type is scalar" do
-      operation_details = %{
-        arguments: [],
-        operation_name: "currentTime",
-        operation_type: "query",
-        return_type: %{
-          kind: "SCALAR",
-          name: "String"
-        }
-      }
-
-      expected_text =
-        """
-        ```gql
-        query CurrentTime {
-          currentTime
-        }
-        ```
-        """
-
-      assert MarkdownHelpers.graphql_operation_code_block(operation_details) == expected_text
-    end
-
-    test "does not include return fields when the return type is an enum" do
+    test "does not include a selection set when there is nothing to select" do
       operation_details = %{
         arguments: [%{name: "code", required: true, type: "String"}],
         operation_name: "authenticateWithCode",
         operation_type: "mutation",
-        return_type: %{
-          kind: "ENUM",
-          name: "AuthenticationResult",
-          fields: []
-        }
+        return_type: %{kind: "ENUM", name: "AuthenticationResult"},
+        selections: []
       }
 
       expected_text =
@@ -255,63 +254,6 @@ defmodule GraphqlMarkdown.MarkdownHelpersTest do
         ```gql
         mutation AuthenticateWithCode($code: String!) {
           authenticateWithCode(code: $code)
-        }
-        ```
-        """
-
-      assert MarkdownHelpers.graphql_operation_code_block(operation_details) == expected_text
-    end
-
-    test "handles NON_NULL return type by unwrapping to the inner type" do
-      operation_details = %{
-        arguments: [],
-        operation_name: "requiredField",
-        operation_type: "query",
-        return_type: %{
-          kind: "NON_NULL",
-          name: nil,
-          ofType: %{
-            kind: "OBJECT",
-            name: "RequiredResponse",
-            fields: [
-              %{name: "isRequired", type: "SCALAR"},
-              %{name: "metadata", type: "SCALAR"}
-            ]
-          }
-        }
-      }
-
-      expected_text =
-        """
-        ```gql
-        query RequiredField {
-          requiredField {
-            isRequired
-            metadata
-          }
-        }
-        ```
-        """
-
-      assert MarkdownHelpers.graphql_operation_code_block(operation_details) == expected_text
-    end
-
-    test "handles NON_NULL return type without ofType field" do
-      operation_details = %{
-        arguments: [],
-        operation_name: "emptyRequired",
-        operation_type: "query",
-        return_type: %{
-          kind: "NON_NULL",
-          name: "String"
-        }
-      }
-
-      expected_text =
-        """
-        ```gql
-        query EmptyRequired {
-          emptyRequired
         }
         ```
         """

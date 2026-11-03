@@ -19,8 +19,12 @@ defmodule GraphqlMarkdown.MultiPage do
   Returns an ordered list of `{filename, content}`.
   """
   @spec render_schema(Schema.t(), keyword()) :: [{String.t(), String.t()}]
-  def render_schema(schema_details, _options) do
-    layout = %Layout{section_level: 1, link: &page_reference/1}
+  def render_schema(schema_details, options) do
+    layout =
+      struct!(
+        Layout,
+        [section_level: 1, link: &page_reference/1] ++ Keyword.take(options, [:depth])
+      )
 
     Enum.map(Page.sections(), fn section ->
       {"#{section}.md", MarkdownHelpers.document(Page.section(section, schema_details, layout))}

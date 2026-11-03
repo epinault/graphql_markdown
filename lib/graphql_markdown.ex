@@ -15,6 +15,7 @@ defmodule GraphqlMarkdown do
           | :absinthe_not_available
           | {:not_a_schema, module()}
           | {:introspection_failed, term()}
+          | {:invalid_depth, term()}
           | File.posix()
           | Jason.DecodeError.t()
 
@@ -40,10 +41,15 @@ defmodule GraphqlMarkdown do
     * `:multi_page` - one file per section instead of a single page
     * `:title` - title of the single page. Default: `"Graphql Schema"`
     * `:no_toc` - leave the table of contents out of the single page
+    * `:depth` - how many nested levels the example operations select,
+      counting the operation's own selection set. Default: `2`. Must be a
+      positive integer, otherwise `{:error, {:invalid_depth, value}}` is
+      returned
   """
   @spec render(keyword()) :: {:ok, pages()} | {:error, error()}
   def render(options) do
-    with {:ok, json} <- load_json(options),
+    with :ok <- validate_depth(options),
+         {:ok, json} <- load_json(options),
          {:ok, schema} <- Schema.schema_from_json(json) do
       {:ok, schema |> render_schema(options) |> Map.new()}
     end
@@ -58,7 +64,8 @@ defmodule GraphqlMarkdown do
   """
   @spec generate(keyword()) :: {:ok, [Path.t()]} | {:error, error()}
   def generate(options) do
-    with {:ok, json} <- load_json(options),
+    with :ok <- validate_depth(options),
+         {:ok, json} <- load_json(options),
          {:ok, schema} <- Schema.schema_from_json(json) do
       output_dir = Keyword.get(options, :output_dir, ".")
 
@@ -72,6 +79,14 @@ defmodule GraphqlMarkdown do
         end)
 
       {:ok, paths}
+    end
+  end
+
+  defp validate_depth(options) do
+    case Keyword.fetch(options, :depth) do
+      :error -> :ok
+      {:ok, depth} when is_integer(depth) and depth >= 1 -> :ok
+      {:ok, depth} -> {:error, {:invalid_depth, depth}}
     end
   end
 

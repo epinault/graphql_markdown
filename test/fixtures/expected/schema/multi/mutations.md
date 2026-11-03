@@ -80,8 +80,12 @@ mutation PasswordLoginV2($input: PasswordLoginInput!) {
   passwordLoginV2(input: $input) {
     __typename
     ... on LoginResponse {
+      idToken
+      refreshToken
     }
     ... on UnexpectedRequest {
+      key
+      message
     }
   }
 }
@@ -119,6 +123,8 @@ mutation RefreshIdToken($refreshToken: String!) {
   refreshIdToken(refreshToken: $refreshToken) {
     idToken
     userSsoDetails {
+      domain
+      ssoEnabled
     }
   }
 }

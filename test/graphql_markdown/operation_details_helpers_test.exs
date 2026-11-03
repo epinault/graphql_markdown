@@ -461,7 +461,7 @@ defmodule GraphqlMarkdown.OperationDetailsHelpersTest do
     ]
   }
 
-  describe "generate_operation_details/3" do
+  describe "generate_operation_details/4" do
     test "returns 'query' as the operation type for queries" do
       operation_details =
         OperationDetailsHelpers.generate_operation_details(
@@ -511,16 +511,7 @@ defmodule GraphqlMarkdown.OperationDetailsHelpersTest do
       assert operation_details.arguments == expected_arguments
     end
 
-    test "returns the return type for an operation" do
-      expected_return_type = %{
-        fields: [
-          %{name: "domain", type: "SCALAR"},
-          %{name: "ssoEnabled", type: "SCALAR"}
-        ],
-        kind: "OBJECT",
-        name: "UserSsoDetails"
-      }
-
+    test "returns the unwrapped return type and the leaf selections of an object" do
       operation_details =
         OperationDetailsHelpers.generate_operation_details(
           "queries",
@@ -528,19 +519,15 @@ defmodule GraphqlMarkdown.OperationDetailsHelpersTest do
           @schema_details
         )
 
-      assert operation_details.return_type == expected_return_type
+      assert operation_details.return_type == %{kind: "OBJECT", name: "UserSsoDetails"}
+
+      assert operation_details.selections == [
+               %{name: "domain", selections: []},
+               %{name: "ssoEnabled", selections: []}
+             ]
     end
 
-    test "returns the return type for an operation that has a union in its return type" do
-      expected_return_type = %{
-        possible_types: [
-          %{name: "LoginResponse", type: "OBJECT"},
-          %{name: "UnexpectedRequest", type: "OBJECT"}
-        ],
-        kind: "UNION",
-        name: "LoginResponseV2"
-      }
-
+    test "selects __typename and a fragment per possible type of a union" do
       operation_details =
         OperationDetailsHelpers.generate_operation_details(
           "mutations",
@@ -548,23 +535,25 @@ defmodule GraphqlMarkdown.OperationDetailsHelpersTest do
           @schema_details
         )
 
-      assert operation_details.return_type == expected_return_type
+      assert operation_details.return_type == %{kind: "UNION", name: "LoginResponseV2"}
+
+      assert operation_details.selections == [
+               %{name: "__typename", selections: []},
+               %{
+                 on: "LoginResponse",
+                 selections: [
+                   %{name: "idToken", selections: []},
+                   %{name: "refreshToken", selections: []}
+                 ]
+               },
+               %{
+                 on: "UnexpectedRequest",
+                 selections: [%{name: "key", selections: []}, %{name: "message", selections: []}]
+               }
+             ]
     end
 
-    test "returns the return type for an operation that has an interface in its return type" do
-      expected_return_type = %{
-        fields: [
-          %{name: "id", type: "SCALAR"},
-          %{name: "name", type: "SCALAR"}
-        ],
-        possible_types: [
-          %{name: "Human", type: "OBJECT"},
-          %{name: "Droid", type: "OBJECT"}
-        ],
-        kind: "INTERFACE",
-        name: "Character"
-      }
-
+    test "selects the shared fields of an interface and the own fields of each implementer" do
       operation_details =
         OperationDetailsHelpers.generate_operation_details(
           "queries",
@@ -572,20 +561,18 @@ defmodule GraphqlMarkdown.OperationDetailsHelpersTest do
           @schema_details
         )
 
-      assert operation_details.return_type == expected_return_type
+      assert operation_details.return_type == %{kind: "INTERFACE", name: "Character"}
+
+      assert operation_details.selections == [
+               %{name: "__typename", selections: []},
+               %{name: "id", selections: []},
+               %{name: "name", selections: []},
+               %{on: "Human", selections: [%{name: "age", selections: []}]},
+               %{on: "Droid", selections: [%{name: "primaryFunction", selections: []}]}
+             ]
     end
 
-    test "returns the return type for an operation that has a list as its return type" do
-      expected_return_type = %{
-        fields: [
-          %{name: "id", type: "SCALAR"},
-          %{name: "name", type: "SCALAR"},
-          %{name: "primaryFunction", type: "SCALAR"}
-        ],
-        kind: "OBJECT",
-        name: "Droid"
-      }
-
+    test "unwraps a list return type to its element type" do
       operation_details =
         OperationDetailsHelpers.generate_operation_details(
           "queries",
@@ -593,20 +580,11 @@ defmodule GraphqlMarkdown.OperationDetailsHelpersTest do
           @schema_details
         )
 
-      assert operation_details.return_type == expected_return_type
+      assert operation_details.return_type == %{kind: "OBJECT", name: "Droid"}
+      assert names(operation_details.selections) == ["id", "name", "primaryFunction"]
     end
 
-    test "returns the return type for an operation that has a non-null list as its return type" do
-      expected_return_type = %{
-        fields: [
-          %{name: "id", type: "SCALAR"},
-          %{name: "name", type: "SCALAR"},
-          %{name: "age", type: "SCALAR"}
-        ],
-        kind: "OBJECT",
-        name: "Human"
-      }
-
+    test "unwraps a non-null list return type to its element type" do
       operation_details =
         OperationDetailsHelpers.generate_operation_details(
           "queries",
@@ -614,67 +592,60 @@ defmodule GraphqlMarkdown.OperationDetailsHelpersTest do
           @schema_details
         )
 
-      assert operation_details.return_type == expected_return_type
+      assert operation_details.return_type == %{kind: "OBJECT", name: "Human"}
+      assert names(operation_details.selections) == ["id", "name", "age"]
     end
 
     test "unwraps a NON_NULL OBJECT return type (Droid!)" do
       query = put_in(@user_sso_details_query["type"], non_null(@user_sso_details_query["type"]))
 
-      %{return_type: return_type} =
+      details =
         OperationDetailsHelpers.generate_operation_details("queries", query, @schema_details)
 
-      assert return_type == %{
-               kind: "OBJECT",
-               name: "UserSsoDetails",
-               fields: [
-                 %{name: "domain", type: "SCALAR"},
-                 %{name: "ssoEnabled", type: "SCALAR"}
-               ]
-             }
+      assert details.return_type == %{kind: "OBJECT", name: "UserSsoDetails"}
+      assert names(details.selections) == ["domain", "ssoEnabled"]
     end
 
     test "unwraps a NON_NULL LIST of NON_NULL OBJECT return type ([Droid!]!)" do
       inner = %{"kind" => "OBJECT", "name" => "Droid", "ofType" => nil}
       query = put_in(@droids_in_episode_query["type"], non_null(list_of(non_null(inner))))
 
-      %{return_type: return_type} =
+      details =
         OperationDetailsHelpers.generate_operation_details("queries", query, @schema_details)
 
-      assert return_type.kind == "OBJECT"
-      assert return_type.name == "Droid"
-      assert Enum.map(return_type.fields, & &1.name) == ["id", "name", "primaryFunction"]
+      assert details.return_type == %{kind: "OBJECT", name: "Droid"}
+      assert names(details.selections) == ["id", "name", "primaryFunction"]
     end
 
-    test "unwraps a NON_NULL SCALAR return type to the scalar" do
+    test "unwraps a NON_NULL SCALAR return type to the scalar, which has no selections" do
       scalar = %{"kind" => "SCALAR", "name" => "String", "ofType" => nil}
       query = put_in(@user_sso_details_query["type"], non_null(scalar))
 
-      %{return_type: return_type} =
+      details =
         OperationDetailsHelpers.generate_operation_details("queries", query, @schema_details)
 
-      assert return_type == %{kind: "SCALAR", name: "String", fields: []}
+      assert details.return_type == %{kind: "SCALAR", name: "String"}
+      assert details.selections == []
     end
 
     test "unwraps a LIST of UNION return type to the union" do
       union = %{"kind" => "UNION", "name" => "LoginResponseV2", "ofType" => nil}
       mutation = put_in(@password_login_v2_mutation["type"], list_of(union))
 
-      %{return_type: return_type} =
-        OperationDetailsHelpers.generate_operation_details(
-          "mutations",
-          mutation,
-          @schema_details
-        )
+      details =
+        OperationDetailsHelpers.generate_operation_details("mutations", mutation, @schema_details)
 
-      assert return_type.kind == "UNION"
+      assert details.return_type == %{kind: "UNION", name: "LoginResponseV2"}
 
-      assert Enum.map(return_type.possible_types, & &1.name) == [
+      assert Enum.map(details.selections, &Map.get(&1, :on)) == [
+               nil,
                "LoginResponse",
                "UnexpectedRequest"
              ]
     end
   end
 
+  defp names(selections), do: Enum.map(selections, & &1.name)
   defp non_null(type), do: %{"kind" => "NON_NULL", "name" => nil, "ofType" => type}
   defp list_of(type), do: %{"kind" => "LIST", "name" => nil, "ofType" => type}
 end

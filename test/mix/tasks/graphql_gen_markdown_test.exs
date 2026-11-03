@@ -26,6 +26,20 @@ defmodule Mix.Tasks.GraphqlGenMarkdownTest do
     assert File.read!(Path.join(dir, "graphql_schema.md")) =~ "### Droid"
   end
 
+  test "limits the example operations with --depth", %{tmp_dir: dir} do
+    GraphqlGenMarkdown.run(["-f", "test/fixtures/return_types_schema.json", "-o", dir, "-d", "1"])
+
+    content = File.read!(Path.join(dir, "graphql_schema.md"))
+    assert content =~ "droids {\n    id\n    name\n  }"
+    refute content =~ "owner {"
+  end
+
+  test "raises a readable error for a depth below 1" do
+    assert_raise Mix.Error, ~r/--depth must be a positive integer/, fn ->
+      GraphqlGenMarkdown.run(["-f", "test/fixtures/return_types_schema.json", "-d", "0"])
+    end
+  end
+
   test "raises when both --schema and --schema-module are given" do
     assert_raise Mix.Error, ~r/either --schema.*or --schema-module/i, fn ->
       GraphqlGenMarkdown.run(["-f", "schema.json", "-s", "GraphqlMarkdown.TestSchema"])

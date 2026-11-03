@@ -34,12 +34,15 @@ The hero of an episode
 ```gql
 query Hero($episode: Episode) {
   hero(episode: $episode) {
+    __typename
     id
     name
-    friends
     ... on Human {
+      homePlanet
     }
     ... on Droid {
+      primaryFunction
+      serialNumber
     }
   }
 }
@@ -57,12 +60,15 @@ The hero of the first episode
 ```gql
 query OldHero {
   oldHero {
+    __typename
     id
     name
-    friends
     ... on Human {
+      homePlanet
     }
     ... on Droid {
+      primaryFunction
+      serialNumber
     }
   }
 }

@@ -19,11 +19,11 @@ query Version {
 
 Type: [Droid](#droid)
 
-| field | description |
-| ----- | ----------- |
-| `first` ( [Int](#int) ) | Page size. The default value is `20` |
-| `offset` ( [Int](#int) ) | The default value is `0` |
-| `filter` ( [Int](#int) ) | Free text. |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `first` | [Int](#int) | Page size. The default value is `20` |
+| `offset` | [Int](#int) | The default value is `0` |
+| `filter` | [Int](#int) | Free text. |
 
 ```gql
 query Droids($first: Int, $offset: Int, $filter: Int) {
@@ -47,9 +47,9 @@ None
 
 ### Droid
 
-| field | description |
-| ----- | ----------- |
-| `name` ( [String](#string) ) |  |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `name` | [String](#string) |  |
 
 
 ### Nothing

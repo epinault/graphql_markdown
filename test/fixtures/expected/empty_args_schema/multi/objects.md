@@ -2,9 +2,9 @@
 
 ## Droid
 
-| field | description |
-| ----- | ----------- |
-| `name` ( [String](scalars.html#string) ) |  |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `name` | [String](scalars.html#string) |  |
 
 
 ## Nothing

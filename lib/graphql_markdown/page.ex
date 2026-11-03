@@ -8,6 +8,7 @@ defmodule GraphqlMarkdown.Page do
   `GraphqlMarkdown.Page.Layout` captures: the heading level of a section and
   the way a type reference becomes a link.
   """
+  alias GraphqlMarkdown.Backlinks
   alias GraphqlMarkdown.MarkdownHelpers
   alias GraphqlMarkdown.OperationDetailsHelpers
   alias GraphqlMarkdown.Schema
@@ -20,24 +21,33 @@ defmodule GraphqlMarkdown.Page do
       next level down.
     * `link` - turns an introspection type reference into the URL a link to
       that type should point at.
+    * `page_link` - the URL of a section (given its name and `nil`) or of
+      an entry in it (given the section and the entry's name).
     * `depth` - how many nested levels the example operations select.
+    * `backlinks` - the `GraphqlMarkdown.Backlinks` index, or `nil` when
+      backlinks are not rendered.
     """
-    @enforce_keys [:section_level, :link]
+    @enforce_keys [:section_level, :link, :page_link]
     defstruct [
       :section_level,
       :link,
-      depth: GraphqlMarkdown.OperationDetailsHelpers.default_depth()
+      :page_link,
+      depth: GraphqlMarkdown.OperationDetailsHelpers.default_depth(),
+      backlinks: nil
     ]
 
     @type t :: %__MODULE__{
             section_level: pos_integer(),
             link: (map() -> String.t()),
-            depth: pos_integer()
+            page_link: (String.t(), String.t() | nil -> String.t()),
+            depth: pos_integer(),
+            backlinks: GraphqlMarkdown.Backlinks.t() | nil
           }
   end
 
   @sections ~w(queries mutations subscriptions objects inputs enums scalars interfaces unions)
   @operations ~w(queries mutations subscriptions)
+  @field_columns [field: {}, type: {}, description: {}]
 
   @typedoc "A nested list of lines, consumed by `MarkdownHelpers.document/1`."
   @type lines :: [String.t() | lines()]
@@ -45,6 +55,16 @@ defmodule GraphqlMarkdown.Page do
   @doc "Section names, in the order they are rendered."
   @spec sections() :: [String.t()]
   def sections, do: @sections
+
+  @doc """
+  Builds a layout from the layout-specific `fields` and the rendering
+  options (`:depth`, `:backlinks`).
+  """
+  @spec layout(Schema.t(), keyword(), keyword()) :: Layout.t()
+  def layout(schema_details, options, fields) do
+    backlinks = if options[:backlinks], do: Backlinks.index(schema_details)
+    struct!(Layout, fields ++ Keyword.take(options, [:depth]) ++ [backlinks: backlinks])
+  end
 
   @doc "The document title: the `:title` option or `\"Graphql Schema\"`."
   @spec title_text(keyword()) :: String.t()
@@ -72,11 +92,10 @@ defmodule GraphqlMarkdown.Page do
   The table of contents: one list item per section that exists in the
   schema, with a nested item per operation or type in it.
 
-  `link` receives the section name and `nil` for the section itself, or the
-  section name and the entry's name, and returns the URL to link to.
+  Links come from the layout's `page_link`.
   """
-  @spec toc(Schema.t(), (String.t(), String.t() | nil -> String.t())) :: lines()
-  def toc(schema_details, link) do
+  @spec toc(Schema.t(), Layout.t()) :: lines()
+  def toc(schema_details, %Layout{page_link: link}) do
     Enum.map(@sections, fn section ->
       case Map.get(schema_details, String.to_existing_atom(section)) do
         nil -> []
@@ -126,7 +145,7 @@ defmodule GraphqlMarkdown.Page do
         "",
         deprecation(field),
         description(field["description"]),
-        field["args"] |> field_rows(layout) |> table(field: {}, description: {}),
+        field["args"] |> field_rows(layout) |> table(argument: {}, type: {}, description: {}),
         name
         |> OperationDetailsHelpers.generate_operation_details(field, schema_details,
           depth: layout.depth
@@ -144,13 +163,14 @@ defmodule GraphqlMarkdown.Page do
         "",
         description(type["description"]),
         type_body(type, layout),
+        backlinks(type, layout),
         ""
       ]
     end)
   end
 
   defp type_body(%{"kind" => "INPUT_OBJECT"} = type, layout) do
-    type["inputFields"] |> field_rows(layout) |> table(field: {}, description: {})
+    type["inputFields"] |> field_rows(layout) |> table(@field_columns)
   end
 
   defp type_body(%{"kind" => "SCALAR"}, _layout), do: []
@@ -162,12 +182,12 @@ defmodule GraphqlMarkdown.Page do
   end
 
   defp type_body(%{"kind" => "UNION"} = type, layout) do
-    ["Possible types:", "", possible_types(type["possibleTypes"], layout)]
+    ["Possible types:", "", possible_types(type["possibleTypes"], layout), ""]
   end
 
   defp type_body(%{"kind" => "INTERFACE"} = type, layout) do
     [
-      type["fields"] |> field_rows(layout) |> table(field: {}, description: {}),
+      type["fields"] |> field_rows(layout) |> table(@field_columns),
       implemented_by(type["possibleTypes"], layout)
     ]
   end
@@ -175,7 +195,7 @@ defmodule GraphqlMarkdown.Page do
   defp type_body(type, layout) do
     [
       implements(type["interfaces"], layout),
-      type["fields"] |> field_rows(layout) |> table(field: {}, description: {})
+      type["fields"] |> field_rows(layout) |> table(@field_columns)
     ]
   end
 
@@ -189,7 +209,7 @@ defmodule GraphqlMarkdown.Page do
   defp implemented_by(types, _layout) when types in [[], nil], do: []
 
   defp implemented_by(types, layout) do
-    ["Implemented by:", "", possible_types(types, layout)]
+    ["Implemented by:", "", possible_types(types, layout), ""]
   end
 
   defp possible_types(types, layout) do
@@ -211,14 +231,43 @@ defmodule GraphqlMarkdown.Page do
 
   defp field_rows(fields, layout) do
     Enum.map(fields, fn field ->
-      type_details = type_link(field["type"], Schema.full_field_type(field["type"]), layout)
-
       [
-        strike(MarkdownHelpers.code(signature(field)), field) <> " ( " <> type_details <> " )",
+        strike(MarkdownHelpers.code(signature(field)), field),
+        type_link(field["type"], Schema.full_field_type(field["type"]), layout),
         description_cell(field)
       ]
     end)
   end
+
+  # Scalars are referenced from almost everywhere, so they get no backlinks.
+  defp backlinks(_type, %Layout{backlinks: nil}), do: []
+  defp backlinks(%{"kind" => "SCALAR"}, _layout), do: []
+
+  defp backlinks(type, layout) do
+    %{returned_by: returned_by, used_by: used_by} =
+      Backlinks.lookup(layout.backlinks, type["name"])
+
+    [
+      reference_list("Returned by:", returned_by, layout),
+      reference_list("Used by:", used_by, layout)
+    ]
+  end
+
+  defp reference_list(_title, [], _layout), do: []
+
+  defp reference_list(title, references, layout) do
+    [
+      title,
+      "",
+      Enum.map(references, &(&1 |> reference_link(layout) |> MarkdownHelpers.list(1))),
+      ""
+    ]
+  end
+
+  defp reference_link({:operation, section, name}, layout),
+    do: MarkdownHelpers.link(name, layout.page_link.(section, name))
+
+  defp reference_link({:type, type}, layout), do: type_link(type, type["name"], layout)
 
   # Fields that take arguments show them inline, in SDL syntax:
   # `friends(first: Int = 10, after: String)`.

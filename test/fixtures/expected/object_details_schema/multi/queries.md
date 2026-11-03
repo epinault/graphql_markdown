@@ -6,9 +6,9 @@ Type: [Character](interfaces.html#character)
 
 The hero of an episode
 
-| field | description |
-| ----- | ----------- |
-| `episode` ( [Episode](enums.html#episode) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `episode` | [Episode](enums.html#episode) |  |
 
 ```gql
 query Hero($episode: Episode) {

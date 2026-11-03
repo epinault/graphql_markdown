@@ -19,11 +19,11 @@ defmodule GraphqlMarkdown.ObjectDetailsTest do
       single: single
     } do
       assert single =~
-               "| ~~`primaryFunction`~~ ( [String](#string) ) | What the droid was built for. **Deprecated:** Droids no longer have a single function |"
+               "| ~~`primaryFunction`~~ | [String](#string) | What the droid was built for. **Deprecated:** Droids no longer have a single function |"
     end
 
     test "a field that is not deprecated is rendered as before", %{single: single} do
-      assert single =~ "| `homePlanet` ( [String](#string) ) | Where they were born |"
+      assert single =~ "| `homePlanet` | [String](#string) | Where they were born |"
       refute single =~ "~~`homePlanet`~~"
     end
 
@@ -44,7 +44,7 @@ defmodule GraphqlMarkdown.ObjectDetailsTest do
     end
 
     test "multi page renders the same deprecation markers", %{multi: multi} do
-      assert multi["objects.md"] =~ "| ~~`primaryFunction`~~ ( [String](scalars.html#string) ) |"
+      assert multi["objects.md"] =~ "| ~~`primaryFunction`~~ | [String](scalars.html#string) |"
       assert multi["enums.md"] =~ "| ~~CLONE_WARS~~ |"
       assert multi["queries.md"] =~ "\n\n**Deprecated:** Use `hero` instead\n"
     end
@@ -69,30 +69,30 @@ defmodule GraphqlMarkdown.ObjectDetailsTest do
   describe "arguments on object fields" do
     test "arguments are rendered inline with their type and default", %{single: single} do
       assert single =~
-               "| `friends(first: Int = 10, after: String)` ( [\\[Character\\]](#character) ) | Friends of this character |"
+               "| `friends(first: Int = 10, after: String)` | [\\[Character\\]](#character) | Friends of this character |"
     end
 
     test "a field without arguments keeps its bare name", %{single: single} do
-      assert single =~ "| `homePlanet` ( [String](#string) ) |"
+      assert single =~ "| `homePlanet` | [String](#string) |"
       refute single =~ "`homePlanet()`"
     end
 
     test "root operations still render their arguments as a table", %{single: single} do
       assert single =~ "### hero\n"
-      assert single =~ "| `episode` ( [Episode](#episode) ) |"
+      assert single =~ "| `episode` | [Episode](#episode) |"
       refute single =~ "### hero(episode"
     end
 
     test "multi page renders arguments the same way", %{multi: multi} do
       assert multi["objects.md"] =~
-               "| `friends(first: Int = 10, after: String)` ( [\\[Character\\]](interfaces.html#character) ) |"
+               "| `friends(first: Int = 10, after: String)` | [\\[Character\\]](interfaces.html#character) |"
     end
   end
 
   describe "interface implementers" do
     test "an interface lists the objects implementing it after its fields", %{single: single} do
       assert single =~
-               "| `friends(first: Int = 10, after: String)` ( [\\[Character\\]](#character) ) | Friends of this character |\n\nImplemented by:\n\n  * [Human](#human)\n  * [Droid](#droid)\n"
+               "| `friends(first: Int = 10, after: String)` | [\\[Character\\]](#character) | Friends of this character |\n\nImplemented by:\n\n  * [Human](#human)\n  * [Droid](#droid)\n"
     end
 
     test "multi page links the implementers to the objects page", %{multi: multi} do

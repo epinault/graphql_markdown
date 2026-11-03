@@ -49,9 +49,9 @@ Type: [Droid](#droid)
 
 One droid
 
-| field | description |
-| ----- | ----------- |
-| `id` ( [ID!](#id) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `id` | [ID!](#id) |  |
 
 ```gql
 query Droid($id: ID!) {
@@ -152,18 +152,18 @@ None
 
 ### Droid
 
-| field | description |
-| ----- | ----------- |
-| `id` ( [ID!](#id) ) |  |
-| `name` ( [String](#string) ) |  |
-| `owner` ( [Human](#human) ) |  |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `id` | [ID!](#id) |  |
+| `name` | [String](#string) |  |
+| `owner` | [Human](#human) |  |
 
 
 ### Human
 
-| field | description |
-| ----- | ----------- |
-| `name` ( [String](#string) ) |  |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `name` | [String](#string) |  |
 
 
 
@@ -205,5 +205,6 @@ Possible types:
 
   * [Droid](#droid)
   * [Human](#human)
+
 
 

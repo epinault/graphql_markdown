@@ -92,6 +92,25 @@ copy it or to pipe it into another tool:
 mix graphql_gen_markdown -f ./schema.json -o - | pbcopy
 ```
 
+### Backlinks
+
+Pass `--backlinks` to end every object, input, enum, interface and union with
+the operations that return it and the types and operations that use it:
+
+```shell
+mix graphql_gen_markdown -f ./schema.json --backlinks
+```
+
+```markdown
+Returned by:
+
+  * [starship](#starship)
+
+Used by:
+
+  * [Human](#human)
+```
+
 ## Integrate with ExDoc and Absinthe
 
 You can easily automate the process with ExDoc by adding the following to your `mix.exs` file:

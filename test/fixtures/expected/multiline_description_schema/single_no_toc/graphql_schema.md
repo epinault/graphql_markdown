@@ -6,9 +6,9 @@
 
 Type: [Invoice](#invoice)
 
-| field | description |
-| ----- | ----------- |
-| `uid` ( [ID!](#id) ) | Invoice UID<br>required when job_uid \| job_id are absent |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `uid` | [ID!](#id) | Invoice UID<br>required when job_uid \| job_id are absent |
 
 ```gql
 query Invoice($uid: ID!) {
@@ -32,9 +32,9 @@ None
 
 ### Invoice
 
-| field | description |
-| ----- | ----------- |
-| `total` ( [Int](#int) ) | Total in cents.<br><br>Always positive \| never zero |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `total` | [Int](#int) | Total in cents.<br><br>Always positive \| never zero |
 
 
 

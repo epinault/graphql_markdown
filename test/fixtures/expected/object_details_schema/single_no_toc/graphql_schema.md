@@ -8,9 +8,9 @@ Type: [Character](#character)
 
 The hero of an episode
 
-| field | description |
-| ----- | ----------- |
-| `episode` ( [Episode](#episode) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `episode` | [Episode](#episode) |  |
 
 ```gql
 query Hero($episode: Episode) {
@@ -73,13 +73,13 @@ An autonomous mechanical character.
 
 Implements: [Character](#character)
 
-| field | description |
-| ----- | ----------- |
-| `id` ( [ID!](#id) ) |  |
-| `name` ( [String](#string) ) | Full name |
-| `friends(first: Int = 10, after: String)` ( [\[Character\]](#character) ) | Friends of this character |
-| ~~`primaryFunction`~~ ( [String](#string) ) | What the droid was built for. **Deprecated:** Droids no longer have a single function |
-| `serialNumber` ( [String](#string) ) |  |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `id` | [ID!](#id) |  |
+| `name` | [String](#string) | Full name |
+| `friends(first: Int = 10, after: String)` | [\[Character\]](#character) | Friends of this character |
+| ~~`primaryFunction`~~ | [String](#string) | What the droid was built for. **Deprecated:** Droids no longer have a single function |
+| `serialNumber` | [String](#string) |  |
 
 
 ### Human
@@ -88,21 +88,21 @@ A person.
 
 Implements: [Character](#character)
 
-| field | description |
-| ----- | ----------- |
-| `id` ( [ID!](#id) ) |  |
-| `name` ( [String](#string) ) | Full name |
-| `friends(first: Int = 10, after: String)` ( [\[Character\]](#character) ) | Friends of this character |
-| `homePlanet` ( [String](#string) ) | Where they were born |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `id` | [ID!](#id) |  |
+| `name` | [String](#string) | Full name |
+| `friends(first: Int = 10, after: String)` | [\[Character\]](#character) | Friends of this character |
+| `homePlanet` | [String](#string) | Where they were born |
 
 
 ### Starship
 
 A vessel. Implements nothing.
 
-| field | description |
-| ----- | ----------- |
-| `id` ( [ID!](#id) ) |  |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `id` | [ID!](#id) |  |
 
 
 
@@ -149,16 +149,17 @@ Unique identifier
 
 A character in the saga.
 
-| field | description |
-| ----- | ----------- |
-| `id` ( [ID!](#id) ) |  |
-| `name` ( [String](#string) ) | Full name |
-| `friends(first: Int = 10, after: String)` ( [\[Character\]](#character) ) | Friends of this character |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `id` | [ID!](#id) |  |
+| `name` | [String](#string) | Full name |
+| `friends(first: Int = 10, after: String)` | [\[Character\]](#character) | Friends of this character |
 
 Implemented by:
 
   * [Human](#human)
   * [Droid](#droid)
+
 
 
 ## Unions

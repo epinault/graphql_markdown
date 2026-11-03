@@ -17,11 +17,11 @@ query Version {
 
 Type: [Droid](objects.html#droid)
 
-| field | description |
-| ----- | ----------- |
-| `first` ( [Int](scalars.html#int) ) | Page size. The default value is `20` |
-| `offset` ( [Int](scalars.html#int) ) | The default value is `0` |
-| `filter` ( [Int](scalars.html#int) ) | Free text. |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `first` | [Int](scalars.html#int) | Page size. The default value is `20` |
+| `offset` | [Int](scalars.html#int) | The default value is `0` |
+| `filter` | [Int](scalars.html#int) | Free text. |
 
 ```gql
 query Droids($first: Int, $offset: Int, $filter: Int) {

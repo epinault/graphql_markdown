@@ -31,9 +31,9 @@ query Hero {
 
 Type: [Starship](objects.html#starship)
 
-| field | description |
-| ----- | ----------- |
-| `id` ( [ID!](scalars.html#id) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `id` | [ID!](scalars.html#id) |  |
 
 ```gql
 query Starship($id: ID!) {

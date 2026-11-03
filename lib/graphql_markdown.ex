@@ -52,6 +52,9 @@ defmodule GraphqlMarkdown do
       `{:error, {:invalid_link_ext, value}}`
     * `:front_matter` - start every page with a YAML block holding its
       `title`
+    * `:backlinks` - end every object, input, enum, interface and union
+      entry with the operations that return it (`Returned by`) and the
+      types and operations that use it in a field or argument (`Used by`)
   """
   @spec render(keyword()) :: {:ok, pages()} | {:error, error()}
   def render(options) do

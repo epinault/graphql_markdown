@@ -6,9 +6,9 @@
 
 Type: [UserSsoDetails](#userssodetails)
 
-| field | description |
-| ----- | ----------- |
-| `emailOrPhone` ( [String!](#string) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `emailOrPhone` | [String!](#string) |  |
 
 ```gql
 query UserSsoDetails($emailOrPhone: String!) {
@@ -24,9 +24,9 @@ query UserSsoDetails($emailOrPhone: String!) {
 
 Type: [Character](#character)
 
-| field | description |
-| ----- | ----------- |
-| `episode` ( [String!](#string) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `episode` | [String!](#string) |  |
 
 ```gql
 query HeroForEpisode($episode: String!) {
@@ -51,9 +51,9 @@ Type: [Droid](#droid)
 
 Get droids for episode
 
-| field | description |
-| ----- | ----------- |
-| `episode` ( [String!](#string) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `episode` | [String!](#string) |  |
 
 ```gql
 query DroidsInEpisode($episode: String!) {
@@ -72,9 +72,9 @@ Type: [Human](#human)
 
 Get the humans in an episode
 
-| field | description |
-| ----- | ----------- |
-| `episode` ( [String!](#string) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `episode` | [String!](#string) |  |
 
 ```gql
 query HumansInEpisode($episode: String!) {
@@ -94,9 +94,9 @@ query HumansInEpisode($episode: String!) {
 
 Type: [GenerateLoginCodeResponse](#generatelogincoderesponse)
 
-| field | description |
-| ----- | ----------- |
-| `emailOrPhone` ( [String!](#string) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `emailOrPhone` | [String!](#string) |  |
 
 ```gql
 mutation GenerateLoginCode($emailOrPhone: String!) {
@@ -111,9 +111,9 @@ mutation GenerateLoginCode($emailOrPhone: String!) {
 
 Type: [String](#string)
 
-| field | description |
-| ----- | ----------- |
-| `refreshToken` ( [String!](#string) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `refreshToken` | [String!](#string) |  |
 
 ```gql
 mutation Logout($refreshToken: String!) {
@@ -126,9 +126,9 @@ mutation Logout($refreshToken: String!) {
 
 Type: [String](#string)
 
-| field | description |
-| ----- | ----------- |
-| `userUid` ( [String!](#string) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `userUid` | [String!](#string) |  |
 
 ```gql
 mutation LogoutAll($userUid: String!) {
@@ -141,9 +141,9 @@ mutation LogoutAll($userUid: String!) {
 
 Type: [LoginResponse](#loginresponse)
 
-| field | description |
-| ----- | ----------- |
-| `input` ( [PasswordLoginInput!](#passwordlogininput) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `input` | [PasswordLoginInput!](#passwordlogininput) |  |
 
 ```gql
 mutation PasswordLogin($input: PasswordLoginInput!) {
@@ -161,9 +161,9 @@ Type: [LoginResponseV2](#loginresponsev2)
 
 Version 2 of password login
 
-| field | description |
-| ----- | ----------- |
-| `input` ( [PasswordLoginInput!](#passwordlogininput) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `input` | [PasswordLoginInput!](#passwordlogininput) |  |
 
 ```gql
 mutation PasswordLoginV2($input: PasswordLoginInput!) {
@@ -186,9 +186,9 @@ mutation PasswordLoginV2($input: PasswordLoginInput!) {
 
 Type: [LoginResponse](#loginresponse)
 
-| field | description |
-| ----- | ----------- |
-| `input` ( [PasswordlessLoginInput!](#passwordlesslogininput) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `input` | [PasswordlessLoginInput!](#passwordlesslogininput) |  |
 
 ```gql
 mutation PasswordlessLogin($input: PasswordlessLoginInput!) {
@@ -204,9 +204,9 @@ mutation PasswordlessLogin($input: PasswordlessLoginInput!) {
 
 Type: [RefreshIdTokenResponse](#refreshidtokenresponse)
 
-| field | description |
-| ----- | ----------- |
-| `refreshToken` ( [String!](#string) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `refreshToken` | [String!](#string) |  |
 
 ```gql
 mutation RefreshIdToken($refreshToken: String!) {
@@ -247,63 +247,63 @@ subscription LoginEvent {
 
 Implements: [Character](#character)
 
-| field | description |
-| ----- | ----------- |
-| `id` ( [ID](#id) ) |  |
-| `name` ( [String](#string) ) |  |
-| `primaryFunction` ( [String](#string) ) |  |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `id` | [ID](#id) |  |
+| `name` | [String](#string) |  |
+| `primaryFunction` | [String](#string) |  |
 
 
 ### GenerateLoginCodeResponse
 
-| field | description |
-| ----- | ----------- |
-| `processed` ( [Boolean!](#boolean) ) |  |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `processed` | [Boolean!](#boolean) |  |
 
 
 ### Human
 
 Implements: [Character](#character)
 
-| field | description |
-| ----- | ----------- |
-| `id` ( [ID](#id) ) |  |
-| `name` ( [String](#string) ) |  |
-| `age` ( [Int](#int) ) |  |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `id` | [ID](#id) |  |
+| `name` | [String](#string) |  |
+| `age` | [Int](#int) |  |
 
 
 ### LoginResponse
 
-| field | description |
-| ----- | ----------- |
-| `idToken` ( [String!](#string) ) |  |
-| `refreshToken` ( [String!](#string) ) |  |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `idToken` | [String!](#string) |  |
+| `refreshToken` | [String!](#string) |  |
 
 
 ### RefreshIdTokenResponse
 
-| field | description |
-| ----- | ----------- |
-| `idToken` ( [String](#string) ) |  |
-| `userSsoDetails` ( [UserSsoDetails](#userssodetails) ) |  |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `idToken` | [String](#string) |  |
+| `userSsoDetails` | [UserSsoDetails](#userssodetails) |  |
 
 
 ### UnexpectedRequest
 
 Unacceptable input from user
 
-| field | description |
-| ----- | ----------- |
-| `key` ( [String!](#string) ) | The type of violation |
-| `message` ( [String!](#string) ) | An explanation on how the user can proceed |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `key` | [String!](#string) | The type of violation |
+| `message` | [String!](#string) | An explanation on how the user can proceed |
 
 
 ### UserSsoDetails
 
-| field | description |
-| ----- | ----------- |
-| `domain` ( [String](#string) ) |  |
-| `ssoEnabled` ( [Boolean!](#boolean) ) |  |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `domain` | [String](#string) |  |
+| `ssoEnabled` | [Boolean!](#boolean) |  |
 
 
 
@@ -311,18 +311,18 @@ Unacceptable input from user
 
 ### PasswordLoginInput
 
-| field | description |
-| ----- | ----------- |
-| `emailOrPhone` ( [String!](#string) ) |  |
-| `password` ( [String!](#string) ) |  |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `emailOrPhone` | [String!](#string) |  |
+| `password` | [String!](#string) |  |
 
 
 ### PasswordlessLoginInput
 
-| field | description |
-| ----- | ----------- |
-| `code` ( [String!](#string) ) |  |
-| `emailOrPhone` ( [String!](#string) ) |  |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `code` | [String!](#string) |  |
+| `emailOrPhone` | [String!](#string) |  |
 
 
 
@@ -351,15 +351,16 @@ represent free-form human-readable text.
 
 Information about a character
 
-| field | description |
-| ----- | ----------- |
-| `id` ( [ID](#id) ) |  |
-| `name` ( [String](#string) ) | The name |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `id` | [ID](#id) |  |
+| `name` | [String](#string) | The name |
 
 Implemented by:
 
   * [Human](#human)
   * [Droid](#droid)
+
 
 
 ## Unions
@@ -373,11 +374,13 @@ Possible types:
   * [LoginResponse](#loginresponse)
   * [UnexpectedRequest](#unexpectedrequest)
 
+
 ### OauthPreauthorizeResult
 
 Possible types:
 
   * [OauthPreauthorizeData](#oauthpreauthorizedata)
   * [OauthRedirect](#oauthredirect)
+
 
 

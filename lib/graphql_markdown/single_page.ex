@@ -10,7 +10,6 @@ defmodule GraphqlMarkdown.SinglePage do
   """
   alias GraphqlMarkdown.MarkdownHelpers
   alias GraphqlMarkdown.Page
-  alias GraphqlMarkdown.Page.Layout
   alias GraphqlMarkdown.Schema
 
   @filename "graphql_schema.md"
@@ -23,21 +22,25 @@ defmodule GraphqlMarkdown.SinglePage do
   @spec render_schema(Schema.t(), keyword()) :: [{String.t(), String.t()}]
   def render_schema(schema_details, options) do
     layout =
-      struct!(Layout, [section_level: 2, link: &anchor/1] ++ Keyword.take(options, [:depth]))
+      Page.layout(schema_details, options,
+        section_level: 2,
+        link: &anchor/1,
+        page_link: &toc_anchor/2
+      )
 
     lines = [
       Page.front_matter(Page.title_text(options), options),
       Page.title(options),
       "",
-      toc(schema_details, options),
+      toc(schema_details, options, layout),
       Enum.map(Page.sections(), &[Page.section(&1, schema_details, layout), ""])
     ]
 
     [{@filename, MarkdownHelpers.document(lines)}]
   end
 
-  defp toc(schema_details, options) do
-    if options[:no_toc], do: [], else: [Page.toc(schema_details, &toc_anchor/2), ""]
+  defp toc(schema_details, options, layout) do
+    if options[:no_toc], do: [], else: [Page.toc(schema_details, layout), ""]
   end
 
   defp toc_anchor(section, nil), do: "#" <> section

@@ -103,6 +103,13 @@ defmodule GraphqlMarkdown.Page do
     ["Possible types:", "", possible_types(type["possibleTypes"], layout)]
   end
 
+  defp type_body(%{"kind" => "INTERFACE"} = type, layout) do
+    [
+      type["fields"] |> field_rows(layout) |> table(field: {}, description: {}),
+      implemented_by(type["possibleTypes"], layout)
+    ]
+  end
+
   defp type_body(type, layout) do
     [
       implements(type["interfaces"], layout),
@@ -115,6 +122,12 @@ defmodule GraphqlMarkdown.Page do
   defp implements(interfaces, layout) do
     links = Enum.map_join(interfaces, ", ", &type_link(&1, &1["name"], layout))
     ["Implements: " <> links, ""]
+  end
+
+  defp implemented_by(types, _layout) when types in [[], nil], do: []
+
+  defp implemented_by(types, layout) do
+    ["Implemented by:", "", possible_types(types, layout)]
   end
 
   defp possible_types(types, layout) do

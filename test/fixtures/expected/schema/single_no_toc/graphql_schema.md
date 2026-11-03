@@ -236,6 +236,8 @@ subscription LoginEvent {
 
 ### Droid
 
+Implements: [Character](#character)
+
 | field | description |
 | ----- | ----------- |
 | `id` ( [ID](#id) ) |  |
@@ -251,6 +253,8 @@ subscription LoginEvent {
 
 
 ### Human
+
+Implements: [Character](#character)
 
 | field | description |
 | ----- | ----------- |
@@ -343,6 +347,10 @@ Information about a character
 | `id` ( [ID](#id) ) |  |
 | `name` ( [String](#string) ) | The name |
 
+Implemented by:
+
+  * [Human](#human)
+  * [Droid](#droid)
 
 
 ## Unions

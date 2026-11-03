@@ -88,4 +88,16 @@ defmodule GraphqlMarkdown.ObjectDetailsTest do
                "| `friends(first: Int = 10, after: String)` ( [\\[Character\\]](interfaces.html#character) ) |"
     end
   end
+
+  describe "interface implementers" do
+    test "an interface lists the objects implementing it after its fields", %{single: single} do
+      assert single =~
+               "| `friends(first: Int = 10, after: String)` ( [\\[Character\\]](#character) ) | Friends of this character |\n\nImplemented by:\n\n  * [Human](#human)\n  * [Droid](#droid)\n"
+    end
+
+    test "multi page links the implementers to the objects page", %{multi: multi} do
+      assert multi["interfaces.md"] =~
+               "Implemented by:\n\n  * [Human](objects.html#human)\n  * [Droid](objects.html#droid)\n"
+    end
+  end
 end

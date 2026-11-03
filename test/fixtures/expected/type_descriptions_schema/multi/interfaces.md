@@ -8,4 +8,7 @@ Something with a name, human or not.
 | ----- | ----------- |
 | `name` ( [String](scalars.html#string) ) |  |
 
+Implemented by:
+
+  * [Droid](objects.html#droid)
 

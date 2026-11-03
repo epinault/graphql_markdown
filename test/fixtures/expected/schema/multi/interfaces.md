@@ -9,4 +9,8 @@ Information about a character
 | `id` ( [ID](scalars.html#id) ) |  |
 | `name` ( [String](scalars.html#string) ) | The name |
 
+Implemented by:
+
+  * [Human](objects.html#human)
+  * [Droid](objects.html#droid)
 

@@ -9,6 +9,7 @@
 ### Changed
 
 * Pages are rendered fully in memory and written once. `generate/1` can run concurrently in the same VM, and a failure no longer leaves a partially written file behind
+* Single-page and multi-page output share one renderer (`GraphqlMarkdown.Page`). Multi-page files are now returned in the same order as the single-page sections, with `subscriptions.md` after `mutations.md`
 
 ### Removed
 

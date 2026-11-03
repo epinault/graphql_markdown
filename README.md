@@ -141,6 +141,30 @@ Make sure the absinthe schema is specified or generated with that name. Or add t
 config :absinthe, schema: YourApp.GraphQL.Schema
 ```
 
+## Using it with GitHub, MkDocs, Docusaurus or Hugo
+
+Multi-page links point at `objects.html#droid` by default, which is what ExDoc
+produces. For other targets pick the extension your tool expects, and add
+front matter when it wants one:
+
+```shell
+# GitHub or MkDocs: links to the .md files themselves
+mix graphql_gen_markdown -f schema.json -o docs/graphql -m --link-ext md
+
+# Docusaurus or Hugo: clean URLs and a YAML title block on every page
+mix graphql_gen_markdown -f schema.json -o docs/graphql -m --link-ext none --front-matter
+```
+
+`--front-matter` writes a block such as
+
+```yaml
+---
+title: "Queries"
+---
+```
+
+at the top of each page; the index and the single page use the document title.
+
 ## Using it with Absinthe
 
 If your schema is an Absinthe module you can skip the intermediate JSON file

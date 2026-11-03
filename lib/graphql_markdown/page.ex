@@ -47,9 +47,25 @@ defmodule GraphqlMarkdown.Page do
   def sections, do: @sections
 
   @doc "The document title: the `:title` option or `\"Graphql Schema\"`."
+  @spec title_text(keyword()) :: String.t()
+  def title_text(options), do: Keyword.get(options, :title, "Graphql Schema")
+
+  @doc "The document title as a level-one heading."
   @spec title(keyword()) :: String.t()
-  def title(options) do
-    MarkdownHelpers.header(Keyword.get(options, :title, "Graphql Schema"), 1)
+  def title(options), do: MarkdownHelpers.header(title_text(options), 1)
+
+  @doc """
+  The YAML front matter of a page with the given title, followed by a blank
+  line, or nothing when the `:front_matter` option is not set.
+  """
+  @spec front_matter(String.t(), keyword()) :: lines()
+  def front_matter(title, options) do
+    if options[:front_matter], do: ["---", "title: " <> yaml_string(title), "---", ""], else: []
+  end
+
+  defp yaml_string(text) do
+    escaped = text |> String.replace("\\", "\\\\") |> String.replace("\"", "\\\"")
+    "\"" <> escaped <> "\""
   end
 
   @doc """

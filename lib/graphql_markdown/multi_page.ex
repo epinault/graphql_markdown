@@ -3,7 +3,8 @@ defmodule GraphqlMarkdown.MultiPage do
   Multi page generator from Graphql to Markdown.
 
   Every section becomes its own page, so links point at the page holding the
-  referenced type, with ExDoc's `.html` extension. An `index.md` with the
+  referenced type, with the `:link_ext` extension (ExDoc's `.html` by
+  default). An `index.md` with the
   title and a table of contents linking to every page and entry comes first.
 
   Rendering is pure: `render_schema/2` returns the page contents and never
@@ -21,32 +22,44 @@ defmodule GraphqlMarkdown.MultiPage do
   """
   @spec render_schema(Schema.t(), keyword()) :: [{String.t(), String.t()}]
   def render_schema(schema_details, options) do
+    ext = extension(Keyword.get(options, :link_ext, :html))
+
     layout =
       struct!(
         Layout,
-        [section_level: 1, link: &page_reference/1] ++ Keyword.take(options, [:depth])
+        [section_level: 1, link: &page_reference(&1, ext)] ++ Keyword.take(options, [:depth])
       )
 
     pages =
       Enum.map(Page.sections(), fn section ->
-        {"#{section}.md", MarkdownHelpers.document(Page.section(section, schema_details, layout))}
+        lines = [
+          Page.front_matter(String.capitalize(section), options),
+          Page.section(section, schema_details, layout)
+        ]
+
+        {"#{section}.md", MarkdownHelpers.document(lines)}
       end)
 
-    [{"index.md", index(schema_details, options)} | pages]
+    [{"index.md", index(schema_details, options, ext)} | pages]
   end
 
-  defp index(schema_details, options) do
+  defp index(schema_details, options, ext) do
     MarkdownHelpers.document([
+      Page.front_matter(Page.title_text(options), options),
       Page.title(options),
       "",
-      Page.toc(schema_details, &page_link/2)
+      Page.toc(schema_details, &page_link(&1, &2, ext))
     ])
   end
 
-  defp page_link(section, nil), do: section <> ".html"
-  defp page_link(section, name), do: section <> ".html#" <> String.downcase(name)
+  defp extension(:html), do: ".html"
+  defp extension(:md), do: ".md"
+  defp extension(:none), do: ""
 
-  defp page_reference(type) do
+  defp page_link(section, nil, ext), do: section <> ext
+  defp page_link(section, name, ext), do: section <> ext <> "#" <> String.downcase(name)
+
+  defp page_reference(type, ext) do
     page =
       case Schema.field_kind(type) do
         "OBJECT" -> "objects"
@@ -57,6 +70,6 @@ defmodule GraphqlMarkdown.MultiPage do
         _ -> "scalars"
       end
 
-    String.downcase(page <> ".html#" <> Schema.field_type(type))
+    String.downcase(page <> ext <> "#" <> Schema.field_type(type))
   end
 end

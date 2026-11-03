@@ -25,9 +25,9 @@ Type: [Droid](objects.html#droid)
 
 One droid
 
-| field | description |
-| ----- | ----------- |
-| `id` ( [ID!](scalars.html#id) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `id` | [ID!](scalars.html#id) |  |
 
 ```gql
 query Droid($id: ID!) {

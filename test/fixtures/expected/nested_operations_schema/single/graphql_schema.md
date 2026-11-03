@@ -55,9 +55,9 @@ query Hero {
 
 Type: [Starship](#starship)
 
-| field | description |
-| ----- | ----------- |
-| `id` ( [ID!](#id) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `id` | [ID!](#id) |  |
 
 ```gql
 query Starship($id: ID!) {
@@ -145,58 +145,58 @@ None
 
 ### Deep
 
-| field | description |
-| ----- | ----------- |
-| `value` ( [String](#string) ) |  |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `value` | [String](#string) |  |
 
 
 ### Droid
 
 Implements: [Character](#character)
 
-| field | description |
-| ----- | ----------- |
-| `id` ( [ID!](#id) ) |  |
-| `name` ( [String](#string) ) |  |
-| `friends` ( [\[Character\]](#character) ) |  |
-| `primaryFunction` ( [String](#string) ) |  |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `id` | [ID!](#id) |  |
+| `name` | [String](#string) |  |
+| `friends` | [\[Character\]](#character) |  |
+| `primaryFunction` | [String](#string) |  |
 
 
 ### Human
 
 Implements: [Character](#character)
 
-| field | description |
-| ----- | ----------- |
-| `id` ( [ID!](#id) ) |  |
-| `name` ( [String](#string) ) |  |
-| `friends` ( [\[Character\]](#character) ) |  |
-| `homePlanet` ( [String](#string) ) |  |
-| `starship` ( [Starship](#starship) ) |  |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `id` | [ID!](#id) |  |
+| `name` | [String](#string) |  |
+| `friends` | [\[Character\]](#character) |  |
+| `homePlanet` | [String](#string) |  |
+| `starship` | [Starship](#starship) |  |
 
 
 ### Inner
 
-| field | description |
-| ----- | ----------- |
-| `value` ( [String](#string) ) |  |
-| `deep` ( [Deep](#deep) ) |  |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `value` | [String](#string) |  |
+| `deep` | [Deep](#deep) |  |
 
 
 ### Starship
 
-| field | description |
-| ----- | ----------- |
-| `id` ( [ID!](#id) ) |  |
-| `name` ( [String](#string) ) |  |
-| `pilot` ( [Human](#human) ) |  |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `id` | [ID!](#id) |  |
+| `name` | [String](#string) |  |
+| `pilot` | [Human](#human) |  |
 
 
 ### Wrapper
 
-| field | description |
-| ----- | ----------- |
-| `inner` ( [Inner](#inner) ) |  |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `inner` | [Inner](#inner) |  |
 
 
 
@@ -221,16 +221,17 @@ None
 
 ### Character
 
-| field | description |
-| ----- | ----------- |
-| `id` ( [ID!](#id) ) |  |
-| `name` ( [String](#string) ) |  |
-| `friends` ( [\[Character\]](#character) ) |  |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `id` | [ID!](#id) |  |
+| `name` | [String](#string) |  |
+| `friends` | [\[Character\]](#character) |  |
 
 Implemented by:
 
   * [Human](#human)
   * [Droid](#droid)
+
 
 
 ## Unions
@@ -241,5 +242,6 @@ Possible types:
 
   * [Human](#human)
   * [Droid](#droid)
+
 
 

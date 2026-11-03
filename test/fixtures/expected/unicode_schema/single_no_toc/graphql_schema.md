@@ -32,9 +32,9 @@ None
 
 ### InvoiceInput
 
-| field | description |
-| ----- | ----------- |
-| `invoiceUid` ( [String](#string) ) | Invoice UID — required when job_uid is absent |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `invoiceUid` | [String](#string) | Invoice UID — required when job_uid is absent |
 
 
 

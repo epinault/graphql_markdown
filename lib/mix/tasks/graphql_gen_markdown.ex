@@ -25,6 +25,8 @@ defmodule Mix.Tasks.GraphqlGenMarkdown do
                             (default, for ExDoc), md (GitHub, MkDocs) or none (clean
                             URLs, Docusaurus)
     --front-matter          Start every page with a YAML block holding its title
+    --backlinks             End every type with the operations returning it and the
+                            types and operations using it
 
 
   Examples
@@ -73,7 +75,8 @@ defmodule Mix.Tasks.GraphqlGenMarkdown do
     depth: :integer,
     check: :boolean,
     link_ext: :string,
-    front_matter: :boolean
+    front_matter: :boolean,
+    backlinks: :boolean
   ]
 
   @link_exts %{"html" => :html, "md" => :md, "none" => :none}
@@ -87,7 +90,7 @@ defmodule Mix.Tasks.GraphqlGenMarkdown do
     d: :depth
   ]
 
-  @usage "usage: mix graphql_gen_markdown (-f path/to/schema.json | -s MyApp.Schema) [-o DIR] [-m] [-t TITLE] [--no-toc] [-d DEPTH] [--link-ext html|md|none] [--front-matter] [--check]"
+  @usage "usage: mix graphql_gen_markdown (-f path/to/schema.json | -s MyApp.Schema) [-o DIR] [-m] [-t TITLE] [--no-toc] [-d DEPTH] [--link-ext html|md|none] [--front-matter] [--backlinks] [--check]"
 
   @doc false
   def run(args) do

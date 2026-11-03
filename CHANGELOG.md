@@ -15,8 +15,12 @@
 * `--link-ext html|md|none` (`link_ext:` in the library) sets the extension of multi-page links, so the output works on GitHub, MkDocs, Docusaurus or Hugo and not only ExDoc. `html` stays the default ([#18](https://github.com/epinault/graphql_markdown/issues/18))
 * `--front-matter` (`front_matter: true`) starts every page with a YAML block holding its `title` ([#18](https://github.com/epinault/graphql_markdown/issues/18))
 
+* `--backlinks` (`backlinks: true`) ends every object, input, enum, interface and union with `Returned by` (operations whose return type is this type) and `Used by` (types and operations referencing it in a field or argument) lists ([#21](https://github.com/epinault/graphql_markdown/issues/21))
+
 ### Changed
 
+* Field and argument tables have separate `field` (or `argument`), `type` and `description` columns instead of `` `name` ( [Type](#type) ) `` in one cell ([#21](https://github.com/epinault/graphql_markdown/issues/21))
+* Union and interface entries end with a blank line like the other entries do
 * `generate/1` and `render/1` return `{:error, :missing_schema}` instead of crashing when neither `:schema` nor `:schema_module` is given
 * Example operations no longer contain empty selection sets (`owner {\n}` or `... on Human {\n}`), which were invalid GraphQL. A nested field with nothing selectable within the depth is left out, and an operation with nothing selectable asks for `__typename`. Interfaces now also select `__typename`, like unions already did
 * `GraphqlMarkdown.OperationDetailsHelpers.generate_operation_details/4` returns the selection set as a tree under `selections`; `return_type` only holds the unwrapped `name` and `kind`

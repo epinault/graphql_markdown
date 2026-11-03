@@ -4,9 +4,9 @@
 
 Type: [GenerateLoginCodeResponse](objects.html#generatelogincoderesponse)
 
-| field | description |
-| ----- | ----------- |
-| `emailOrPhone` ( [String!](scalars.html#string) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `emailOrPhone` | [String!](scalars.html#string) |  |
 
 ```gql
 mutation GenerateLoginCode($emailOrPhone: String!) {
@@ -21,9 +21,9 @@ mutation GenerateLoginCode($emailOrPhone: String!) {
 
 Type: [String](scalars.html#string)
 
-| field | description |
-| ----- | ----------- |
-| `refreshToken` ( [String!](scalars.html#string) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `refreshToken` | [String!](scalars.html#string) |  |
 
 ```gql
 mutation Logout($refreshToken: String!) {
@@ -36,9 +36,9 @@ mutation Logout($refreshToken: String!) {
 
 Type: [String](scalars.html#string)
 
-| field | description |
-| ----- | ----------- |
-| `userUid` ( [String!](scalars.html#string) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `userUid` | [String!](scalars.html#string) |  |
 
 ```gql
 mutation LogoutAll($userUid: String!) {
@@ -51,9 +51,9 @@ mutation LogoutAll($userUid: String!) {
 
 Type: [LoginResponse](objects.html#loginresponse)
 
-| field | description |
-| ----- | ----------- |
-| `input` ( [PasswordLoginInput!](inputs.html#passwordlogininput) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `input` | [PasswordLoginInput!](inputs.html#passwordlogininput) |  |
 
 ```gql
 mutation PasswordLogin($input: PasswordLoginInput!) {
@@ -71,9 +71,9 @@ Type: [LoginResponseV2](unions.html#loginresponsev2)
 
 Version 2 of password login
 
-| field | description |
-| ----- | ----------- |
-| `input` ( [PasswordLoginInput!](inputs.html#passwordlogininput) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `input` | [PasswordLoginInput!](inputs.html#passwordlogininput) |  |
 
 ```gql
 mutation PasswordLoginV2($input: PasswordLoginInput!) {
@@ -96,9 +96,9 @@ mutation PasswordLoginV2($input: PasswordLoginInput!) {
 
 Type: [LoginResponse](objects.html#loginresponse)
 
-| field | description |
-| ----- | ----------- |
-| `input` ( [PasswordlessLoginInput!](inputs.html#passwordlesslogininput) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `input` | [PasswordlessLoginInput!](inputs.html#passwordlesslogininput) |  |
 
 ```gql
 mutation PasswordlessLogin($input: PasswordlessLoginInput!) {
@@ -114,9 +114,9 @@ mutation PasswordlessLogin($input: PasswordlessLoginInput!) {
 
 Type: [RefreshIdTokenResponse](objects.html#refreshidtokenresponse)
 
-| field | description |
-| ----- | ----------- |
-| `refreshToken` ( [String!](scalars.html#string) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `refreshToken` | [String!](scalars.html#string) |  |
 
 ```gql
 mutation RefreshIdToken($refreshToken: String!) {

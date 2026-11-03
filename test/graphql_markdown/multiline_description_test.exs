@@ -11,10 +11,10 @@ defmodule GraphqlMarkdown.MultilineDescriptionTest do
     assert {:ok, %{"graphql_schema.md" => content}} = GraphqlMarkdown.render(schema: @fixture)
 
     assert content =~
-             "| `uid` ( [ID!](#id) ) | Invoice UID<br>required when job_uid \\| job_id are absent |"
+             "| `uid` | [ID!](#id) | Invoice UID<br>required when job_uid \\| job_id are absent |"
 
     assert content =~
-             "| `total` ( [Int](#int) ) | Total in cents.<br><br>Always positive \\| never zero |"
+             "| `total` | [Int](#int) | Total in cents.<br><br>Always positive \\| never zero |"
 
     assert content =~ "| PAID | Paid<br>in full \\| or partially |"
   end
@@ -23,6 +23,6 @@ defmodule GraphqlMarkdown.MultilineDescriptionTest do
     assert {:ok, pages} = GraphqlMarkdown.render(schema: @fixture, multi_page: true)
 
     assert pages["objects.md"] =~
-             "| `total` ( [Int](scalars.html#int) ) | Total in cents.<br><br>Always positive \\| never zero |"
+             "| `total` | [Int](scalars.html#int) | Total in cents.<br><br>Always positive \\| never zero |"
   end
 end

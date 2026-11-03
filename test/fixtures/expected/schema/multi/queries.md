@@ -4,9 +4,9 @@
 
 Type: [UserSsoDetails](objects.html#userssodetails)
 
-| field | description |
-| ----- | ----------- |
-| `emailOrPhone` ( [String!](scalars.html#string) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `emailOrPhone` | [String!](scalars.html#string) |  |
 
 ```gql
 query UserSsoDetails($emailOrPhone: String!) {
@@ -22,9 +22,9 @@ query UserSsoDetails($emailOrPhone: String!) {
 
 Type: [Character](interfaces.html#character)
 
-| field | description |
-| ----- | ----------- |
-| `episode` ( [String!](scalars.html#string) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `episode` | [String!](scalars.html#string) |  |
 
 ```gql
 query HeroForEpisode($episode: String!) {
@@ -49,9 +49,9 @@ Type: [Droid](objects.html#droid)
 
 Get droids for episode
 
-| field | description |
-| ----- | ----------- |
-| `episode` ( [String!](scalars.html#string) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `episode` | [String!](scalars.html#string) |  |
 
 ```gql
 query DroidsInEpisode($episode: String!) {
@@ -70,9 +70,9 @@ Type: [Human](objects.html#human)
 
 Get the humans in an episode
 
-| field | description |
-| ----- | ----------- |
-| `episode` ( [String!](scalars.html#string) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `episode` | [String!](scalars.html#string) |  |
 
 ```gql
 query HumansInEpisode($episode: String!) {

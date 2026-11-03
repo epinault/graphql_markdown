@@ -12,7 +12,6 @@ defmodule GraphqlMarkdown.MultiPage do
   """
   alias GraphqlMarkdown.MarkdownHelpers
   alias GraphqlMarkdown.Page
-  alias GraphqlMarkdown.Page.Layout
   alias GraphqlMarkdown.Schema
 
   @doc """
@@ -25,9 +24,10 @@ defmodule GraphqlMarkdown.MultiPage do
     ext = extension(Keyword.get(options, :link_ext, :html))
 
     layout =
-      struct!(
-        Layout,
-        [section_level: 1, link: &page_reference(&1, ext)] ++ Keyword.take(options, [:depth])
+      Page.layout(schema_details, options,
+        section_level: 1,
+        link: &page_reference(&1, ext),
+        page_link: &page_link(&1, &2, ext)
       )
 
     pages =
@@ -40,15 +40,15 @@ defmodule GraphqlMarkdown.MultiPage do
         {"#{section}.md", MarkdownHelpers.document(lines)}
       end)
 
-    [{"index.md", index(schema_details, options, ext)} | pages]
+    [{"index.md", index(schema_details, options, layout)} | pages]
   end
 
-  defp index(schema_details, options, ext) do
+  defp index(schema_details, options, layout) do
     MarkdownHelpers.document([
       Page.front_matter(Page.title_text(options), options),
       Page.title(options),
       "",
-      Page.toc(schema_details, &page_link(&1, &2, ext))
+      Page.toc(schema_details, layout)
     ])
   end
 

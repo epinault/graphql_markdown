@@ -19,9 +19,9 @@
 
 Type: [Droid](#droid)
 
-| field | description |
-| ----- | ----------- |
-| `input` ( [DroidFilter](#droidfilter) ) |  |
+| argument | type | description |
+| -------- | ---- | ----------- |
+| `input` | [DroidFilter](#droidfilter) |  |
 
 ```gql
 query Droid($input: DroidFilter) {
@@ -49,9 +49,9 @@ An autonomous mechanical character.
 
 Implements: [Character](#character)
 
-| field | description |
-| ----- | ----------- |
-| `name` ( [String](#string) ) |  |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `name` | [String](#string) |  |
 
 
 
@@ -61,9 +61,9 @@ Implements: [Character](#character)
 
 Criteria used to narrow down droids.
 
-| field | description |
-| ----- | ----------- |
-| `name` ( [String](#string) ) | Exact name match |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `name` | [String](#string) | Exact name match |
 
 
 
@@ -83,13 +83,14 @@ None
 
 Something with a name, human or not.
 
-| field | description |
-| ----- | ----------- |
-| `name` ( [String](#string) ) |  |
+| field | type | description |
+| ----- | ---- | ----------- |
+| `name` | [String](#string) |  |
 
 Implemented by:
 
   * [Droid](#droid)
+
 
 
 ## Unions

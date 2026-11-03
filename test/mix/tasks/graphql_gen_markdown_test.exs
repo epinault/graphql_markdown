@@ -40,6 +40,20 @@ defmodule Mix.Tasks.GraphqlGenMarkdownTest do
     end
   end
 
+  test "--backlinks appends Returned by and Used by lists", %{tmp_dir: dir} do
+    GraphqlGenMarkdown.run([
+      "-f",
+      "test/fixtures/nested_operations_schema.json",
+      "-o",
+      dir,
+      "--backlinks"
+    ])
+
+    content = File.read!(Path.join(dir, "graphql_schema.md"))
+    assert content =~ "Returned by:\n\n  * [starship](#starship)"
+    assert content =~ "Used by:\n\n  * [Human](#human)"
+  end
+
   describe "--link-ext and --front-matter" do
     test "--link-ext md rewrites multi-page links", %{tmp_dir: dir} do
       GraphqlGenMarkdown.run([

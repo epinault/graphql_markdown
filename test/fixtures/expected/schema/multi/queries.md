@@ -20,7 +20,7 @@ query UserSsoDetails($emailOrPhone: String!) {
 
 ## heroForEpisode
 
-Type: [Character](scalars.html#character)
+Type: [Character](interfaces.html#character)
 
 | field | description |
 | ----- | ----------- |

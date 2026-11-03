@@ -354,6 +354,47 @@ defmodule GraphqlMarkdown.MarkdownHelpersTest do
     end
   end
 
+  describe "#sentences" do
+    test "returns an empty string for no parts" do
+      assert MarkdownHelpers.sentences([]) == ""
+      assert MarkdownHelpers.sentences([nil, ""]) == ""
+    end
+
+    test "returns a single part untouched" do
+      assert MarkdownHelpers.sentences([nil, "Page size.", ""]) == "Page size."
+    end
+
+    test "joins parts with a period and a space without doubling periods" do
+      assert MarkdownHelpers.sentences(["Page size.", "Default is 20", "Deprecated"]) ==
+               "Page size. Default is 20. Deprecated"
+    end
+  end
+
+  describe "#deprecation" do
+    test "is empty for a field that is not deprecated" do
+      assert MarkdownHelpers.deprecation(%{"isDeprecated" => false, "deprecationReason" => nil}) ==
+               ""
+
+      assert MarkdownHelpers.deprecation(%{"name" => "arg"}) == ""
+    end
+
+    test "includes the reason when there is one" do
+      assert MarkdownHelpers.deprecation(%{
+               "isDeprecated" => true,
+               "deprecationReason" => "Use x"
+             }) ==
+               "**Deprecated:** Use x"
+    end
+
+    test "is just Deprecated when the reason is missing or blank" do
+      assert MarkdownHelpers.deprecation(%{"isDeprecated" => true, "deprecationReason" => nil}) ==
+               "**Deprecated**"
+
+      assert MarkdownHelpers.deprecation(%{"isDeprecated" => true, "deprecationReason" => ""}) ==
+               "**Deprecated**"
+    end
+  end
+
   describe "#code" do
     test "display as code" do
       assert MarkdownHelpers.code("some text") == "`some text`"

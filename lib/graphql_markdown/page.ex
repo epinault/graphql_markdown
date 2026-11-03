@@ -64,6 +64,7 @@ defmodule GraphqlMarkdown.Page do
         "",
         "Type: " <> type_link(field["type"], Schema.field_type(field["type"]), layout),
         "",
+        deprecation(field),
         description(field["description"]),
         field["args"] |> field_rows(layout) |> table(field: {}, description: {}),
         name
@@ -94,7 +95,7 @@ defmodule GraphqlMarkdown.Page do
 
   defp type_body(%{"kind" => "ENUM"} = type, _layout) do
     type["enumValues"]
-    |> Enum.map(fn value -> [value["name"], value["description"]] end)
+    |> Enum.map(fn value -> [strike(value["name"], value), description_cell(value)] end)
     |> table(value: {}, description: {})
   end
 
@@ -128,11 +129,30 @@ defmodule GraphqlMarkdown.Page do
       type_details = type_link(field["type"], Schema.full_field_type(field["type"]), layout)
 
       [
-        MarkdownHelpers.code(field["name"]) <> " ( " <> type_details <> " )",
-        MarkdownHelpers.field_description(field["description"], field["defaultValue"])
+        strike(MarkdownHelpers.code(field["name"]), field) <> " ( " <> type_details <> " )",
+        description_cell(field)
       ]
     end)
   end
+
+  # The description column: description, default value and deprecation
+  # notice, whichever are present.
+  defp description_cell(field) do
+    MarkdownHelpers.sentences([
+      field["description"],
+      MarkdownHelpers.default_value(field["defaultValue"]),
+      MarkdownHelpers.deprecation(field)
+    ])
+  end
+
+  defp strike(text, %{"isDeprecated" => true}), do: "~~" <> text <> "~~"
+  defp strike(text, _field), do: text
+
+  # A deprecated operation gets its notice as a paragraph of its own.
+  defp deprecation(%{"isDeprecated" => true} = field),
+    do: [MarkdownHelpers.deprecation(field), ""]
+
+  defp deprecation(_field), do: []
 
   # A table with no rows is only a header, so it is skipped altogether.
   defp table([], _columns), do: []

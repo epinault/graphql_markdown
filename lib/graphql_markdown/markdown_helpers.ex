@@ -71,15 +71,38 @@ defmodule GraphqlMarkdown.MarkdownHelpers do
   """
   @spec field_description(String.t() | nil, any()) :: String.t()
   def field_description(description, default) do
-    description = description || ""
-    default_sentence = default_value(default)
+    sentences([description, default_value(default)])
+  end
 
-    cond do
-      default_sentence == "" -> description
-      description == "" -> default_sentence
-      true -> String.trim_trailing(description, ".") <> ". " <> default_sentence
+  @doc """
+  Joins sentence fragments with a period and a space. Empty and `nil`
+  fragments are skipped, and a fragment that already ends with a period is
+  not given a second one.
+  """
+  @spec sentences([String.t() | nil]) :: String.t()
+  def sentences(parts) do
+    case Enum.reject(parts, &(&1 in [nil, ""])) do
+      [] ->
+        ""
+
+      parts ->
+        {leading, [last]} = Enum.split(parts, -1)
+        Enum.map_join(leading, "", &(String.trim_trailing(&1, ".") <> ". ")) <> last
     end
   end
+
+  @doc """
+  The deprecation notice for a field, argument or enum value, or an empty
+  string when it is not deprecated.
+  """
+  @spec deprecation(map()) :: String.t()
+  def deprecation(%{"isDeprecated" => true, "deprecationReason" => reason})
+      when is_binary(reason) and reason != "" do
+    "**Deprecated:** " <> reason
+  end
+
+  def deprecation(%{"isDeprecated" => true}), do: "**Deprecated**"
+  def deprecation(_), do: ""
 
   @doc """
   Joins a (possibly nested) list of lines into a document.

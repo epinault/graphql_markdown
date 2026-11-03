@@ -65,4 +65,27 @@ defmodule GraphqlMarkdown.ObjectDetailsTest do
                "## Human\n\nA person.\n\nImplements: [Character](interfaces.html#character)\n"
     end
   end
+
+  describe "arguments on object fields" do
+    test "arguments are rendered inline with their type and default", %{single: single} do
+      assert single =~
+               "| `friends(first: Int = 10, after: String)` ( [\\[Character\\]](#character) ) | Friends of this character |"
+    end
+
+    test "a field without arguments keeps its bare name", %{single: single} do
+      assert single =~ "| `homePlanet` ( [String](#string) ) |"
+      refute single =~ "`homePlanet()`"
+    end
+
+    test "root operations still render their arguments as a table", %{single: single} do
+      assert single =~ "### hero\n"
+      assert single =~ "| `episode` ( [Episode](#episode) ) |"
+      refute single =~ "### hero(episode"
+    end
+
+    test "multi page renders arguments the same way", %{multi: multi} do
+      assert multi["objects.md"] =~
+               "| `friends(first: Int = 10, after: String)` ( [\\[Character\\]](interfaces.html#character) ) |"
+    end
+  end
 end

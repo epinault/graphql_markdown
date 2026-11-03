@@ -139,11 +139,25 @@ defmodule GraphqlMarkdown.Page do
       type_details = type_link(field["type"], Schema.full_field_type(field["type"]), layout)
 
       [
-        strike(MarkdownHelpers.code(field["name"]), field) <> " ( " <> type_details <> " )",
+        strike(MarkdownHelpers.code(signature(field)), field) <> " ( " <> type_details <> " )",
         description_cell(field)
       ]
     end)
   end
+
+  # Fields that take arguments show them inline, in SDL syntax:
+  # `friends(first: Int = 10, after: String)`.
+  defp signature(%{"args" => [_ | _] = args} = field) do
+    field["name"] <> "(" <> Enum.map_join(args, ", ", &argument/1) <> ")"
+  end
+
+  defp signature(field), do: field["name"]
+
+  defp argument(%{"defaultValue" => nil} = arg) do
+    arg["name"] <> ": " <> Schema.full_field_type(arg["type"])
+  end
+
+  defp argument(arg), do: argument(%{arg | "defaultValue" => nil}) <> " = " <> arg["defaultValue"]
 
   # The description column: description, default value and deprecation
   # notice, whichever are present.

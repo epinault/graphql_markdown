@@ -5,7 +5,7 @@ defmodule GraphqlMarkdownTest do
   @moduletag :tmp_dir
 
   @schema "test/fixtures/schema.json"
-  @multi_page_files ~w(queries mutations objects subscriptions inputs enums scalars interfaces unions)
+  @multi_page_files ~w(queries mutations subscriptions objects inputs enums scalars interfaces unions)
 
   describe "#generate" do
     test "convert schema to markdown as single page", %{tmp_dir: dir} do

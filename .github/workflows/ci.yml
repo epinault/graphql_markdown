@@ -9,7 +9,8 @@ on:
       - master
 
 jobs:
-  setup:
+  test:
+    name: test (Elixir ${{ matrix.elixir_version }}, OTP ${{ matrix.otp_version }})
     runs-on: ${{ matrix.os }}
     env:
       MIX_ENV: test

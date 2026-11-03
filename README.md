@@ -140,6 +140,16 @@ or, from code, `GraphqlMarkdown.generate(schema_module: MyApp.Schema, output_dir
 Absinthe is an optional dependency of this package, so it only works when
 `absinthe` is already in your `mix.exs`.
 
+## Checking committed docs in CI
+
+If you commit the generated markdown, add a step that fails when it no longer
+matches the schema. `--check` renders in memory, compares with the files in
+the output directory and exits non-zero on any difference, without writing:
+
+```shell
+mix graphql_gen_markdown -s YourApp.GraphQL.Schema -o guides/graphql -m --check
+```
+
 ## Using it as a library
 
 `GraphqlMarkdown.generate/1` takes the same options as the mix task and writes the files:
@@ -152,6 +162,14 @@ Absinthe is an optional dependency of this package, so it only works when
 
 ```elixir
 {:ok, %{"graphql_schema.md" => markdown}} = GraphqlMarkdown.render(schema: "schema.json")
+```
+
+`GraphqlMarkdown.check/1` compares the rendered markdown with the files on disk
+and reports the ones that are out of date:
+
+```elixir
+:ok = GraphqlMarkdown.check(schema: "schema.json", output_dir: "guides")
+{:error, {:outdated, [{"guides/graphql_schema.md", :changed}]}} = GraphqlMarkdown.check(...)
 ```
 
 ## Documentation

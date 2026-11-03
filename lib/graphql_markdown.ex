@@ -90,6 +90,47 @@ defmodule GraphqlMarkdown do
     end
   end
 
+  @typedoc """
+  A file that `check/1` found out of date: it differs from the rendered
+  markdown (`:changed`) or does not exist (`:missing`).
+  """
+  @type change :: {Path.t(), :changed | :missing}
+
+  @doc """
+  Renders the markdown and compares it with the files in `:output_dir`
+  (default: the current directory), without writing anything.
+
+  Returns `:ok` when every file is up to date, or
+  `{:error, {:outdated, changes}}` listing the files that differ or are
+  missing, sorted by filename. Use it in CI to make sure the committed
+  documentation matches the schema.
+
+  Accepts the same options as `generate/1`.
+  """
+  @spec check(keyword()) :: :ok | {:error, {:outdated, [change()]} | error()}
+  def check(options) do
+    with {:ok, pages} <- render(options) do
+      output_dir = Keyword.get(options, :output_dir, ".")
+
+      changes =
+        pages
+        |> Enum.sort()
+        |> Enum.flat_map(fn {filename, content} ->
+          compare(Path.join(output_dir, filename), content)
+        end)
+
+      if changes == [], do: :ok, else: {:error, {:outdated, changes}}
+    end
+  end
+
+  defp compare(path, content) do
+    case File.read(path) do
+      {:ok, ^content} -> []
+      {:ok, _other} -> [{path, :changed}]
+      {:error, _} -> [{path, :missing}]
+    end
+  end
+
   defp load_json(options) do
     case {options[:schema], options[:schema_module]} do
       {nil, nil} -> {:error, :missing_schema}

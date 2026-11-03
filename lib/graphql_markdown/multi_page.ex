@@ -34,6 +34,7 @@ defmodule GraphqlMarkdown.MultiPage do
         "INPUT_OBJECT" -> "inputs"
         "ENUM" -> "enums"
         "UNION" -> "unions"
+        "INTERFACE" -> "interfaces"
         _ -> "scalars"
       end
 

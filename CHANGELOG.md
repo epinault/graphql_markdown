@@ -26,6 +26,7 @@
 * Object, interface and input descriptions were never rendered ([#9](https://github.com/epinault/graphql_markdown/issues/9))
 * Operations and types without fields rendered a header-only table, and the default-value sentence was glued to the description without a space ([#10](https://github.com/epinault/graphql_markdown/issues/10))
 * In single-page output the "Possible types" of a union linked to `objects.html#…`, which does not exist in a single page; they now link to the in-page anchor ([#32](https://github.com/epinault/graphql_markdown/issues/32))
+* In multi-page output, links to interface-typed fields and return types pointed at `scalars.html` instead of `interfaces.html` ([#33](https://github.com/epinault/graphql_markdown/issues/33))
 
 ## 1.0.0 - 2026-10-29
 

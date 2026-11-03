@@ -49,4 +49,20 @@ defmodule GraphqlMarkdown.ObjectDetailsTest do
       assert multi["queries.md"] =~ "\n\n**Deprecated:** Use `hero` instead\n"
     end
   end
+
+  describe "implemented interfaces" do
+    test "an object lists the interfaces it implements under its description", %{single: single} do
+      assert single =~
+               "### Human\n\nA person.\n\nImplements: [Character](#character)\n\n| field |"
+    end
+
+    test "an object implementing nothing has no Implements line", %{single: single} do
+      assert single =~ "### Starship\n\nA vessel. Implements nothing.\n\n| field |"
+    end
+
+    test "multi page links the interface to the interfaces page", %{multi: multi} do
+      assert multi["objects.md"] =~
+               "## Human\n\nA person.\n\nImplements: [Character](interfaces.html#character)\n"
+    end
+  end
 end

@@ -22,7 +22,8 @@ defmodule GraphqlMarkdown.SinglePage do
   """
   @spec render_schema(Schema.t(), keyword()) :: [{String.t(), String.t()}]
   def render_schema(schema_details, options) do
-    layout = %Layout{section_level: 2, link: &anchor/1}
+    layout =
+      struct!(Layout, [section_level: 2, link: &anchor/1] ++ Keyword.take(options, [:depth]))
 
     lines = [
       title(options),

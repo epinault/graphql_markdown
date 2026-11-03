@@ -20,13 +20,19 @@ defmodule GraphqlMarkdown.Page do
       next level down.
     * `link` - turns an introspection type reference into the URL a link to
       that type should point at.
+    * `depth` - how many nested levels the example operations select.
     """
     @enforce_keys [:section_level, :link]
-    defstruct [:section_level, :link]
+    defstruct [
+      :section_level,
+      :link,
+      depth: GraphqlMarkdown.OperationDetailsHelpers.default_depth()
+    ]
 
     @type t :: %__MODULE__{
             section_level: pos_integer(),
-            link: (map() -> String.t())
+            link: (map() -> String.t()),
+            depth: pos_integer()
           }
   end
 
@@ -68,7 +74,9 @@ defmodule GraphqlMarkdown.Page do
         description(field["description"]),
         field["args"] |> field_rows(layout) |> table(field: {}, description: {}),
         name
-        |> OperationDetailsHelpers.generate_operation_details(field, schema_details)
+        |> OperationDetailsHelpers.generate_operation_details(field, schema_details,
+          depth: layout.depth
+        )
         |> MarkdownHelpers.graphql_operation_code_block(),
         ""
       ]

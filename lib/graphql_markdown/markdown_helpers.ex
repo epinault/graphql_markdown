@@ -171,8 +171,8 @@ defmodule GraphqlMarkdown.MarkdownHelpers do
   def escape_cell(other), do: other |> to_string() |> escape_cell()
 
   @doc """
-  Generates a code block for a GraphQL operation. Only the top-level fields returned are represented in the code block.
-  When one of the fields returned is an object, the object's fields are not included in the code block.
+  Generates a code block for a GraphQL operation from the details built by
+  `GraphqlMarkdown.OperationDetailsHelpers.generate_operation_details/4`.
 
   Example:
     ```gql
@@ -180,13 +180,12 @@ defmodule GraphqlMarkdown.MarkdownHelpers do
       refreshIdToken(refreshToken: $refreshToken) {
         idToken
         userSsoDetails {
+          domain
+          ssoEnabled
         }
       }
     }
     ```
-
-    In this example, the `idToken` field is a scalar, so it is included in the code block.
-    In this example the `userSsoDetails` field is an object, so its fields are not included in the code block.
   """
   @spec graphql_operation_code_block(OperationDetailsHelpers.graphql_operation_details()) ::
           String.t()
@@ -195,7 +194,7 @@ defmodule GraphqlMarkdown.MarkdownHelpers do
       operation_name: operation_name,
       operation_type: operation_type,
       arguments: args,
-      return_type: return_type
+      selections: selections
     } =
       operation_details
 
@@ -204,28 +203,32 @@ defmodule GraphqlMarkdown.MarkdownHelpers do
     arguments_types = argument_types_string(args)
     arguments = operation_arguments_string(args)
 
-    selection_set = selection_set(return_type)
-
     """
     ```gql
     #{operation_type} #{capitalized_operation_name}#{arguments_types} {
-      #{operation_name}#{arguments}#{selection_set}
+      #{operation_name}#{arguments}#{selection_set(selections, 2)}
     }
     ```
     """
   end
 
-  # Leaf types (scalars and enums) must not carry a selection set, otherwise
-  # the generated operation is not valid GraphQL.
-  @spec selection_set(OperationDetailsHelpers.return_type()) :: String.t()
-  defp selection_set(%{kind: "NON_NULL", ofType: inner_type}), do: selection_set(inner_type)
+  # Leaves have no selection set; a composite type gets its selections on
+  # their own lines, indented two spaces deeper than the parent.
+  @spec selection_set([OperationDetailsHelpers.selection()], non_neg_integer()) :: String.t()
+  defp selection_set([], _indent), do: ""
 
-  defp selection_set(%{kind: kind} = return_type)
-       when kind in ~w(OBJECT LIST UNION INTERFACE) do
-    " {" <> returned_fields(return_type) <> "\n  }"
+  defp selection_set(selections, indent) do
+    body = Enum.map_join(selections, "\n", &selection(&1, indent + 2))
+    " {\n" <> body <> "\n" <> String.duplicate(" ", indent) <> "}"
   end
 
-  defp selection_set(_leaf_type), do: ""
+  defp selection(%{on: type_name, selections: selections}, indent) do
+    String.duplicate(" ", indent) <> "... on " <> type_name <> selection_set(selections, indent)
+  end
+
+  defp selection(%{name: name, selections: selections}, indent) do
+    String.duplicate(" ", indent) <> name <> selection_set(selections, indent)
+  end
 
   @spec capitalize_operation_name(String.t()) :: String.t()
   defp capitalize_operation_name(operation_name) do
@@ -261,77 +264,5 @@ defmodule GraphqlMarkdown.MarkdownHelpers do
       end)
 
     "(#{arguments_string})"
-  end
-
-  @spec returned_fields(OperationDetailsHelpers.return_type()) :: String.t()
-  defp returned_fields(%{kind: kind} = return_type) when kind in ~w(OBJECT LIST) do
-    fields = Map.get(return_type, :fields, [])
-
-    return_values =
-      for field <- fields do
-        if field.type == "OBJECT" do
-          "#{field.name} {\n    }"
-        else
-          field.name
-        end
-      end
-
-    case return_values do
-      [_ | _] -> "\n    " <> Enum.join(return_values, "\n    ")
-      _ -> ""
-    end
-  end
-
-  defp returned_fields(%{kind: "UNION"} = return_type) do
-    possible_types = Map.get(return_type, :possible_types, [])
-
-    return_values =
-      for possible_type <- possible_types do
-        "... on #{possible_type.name} {\n    }"
-      end
-
-    case return_values do
-      [_ | _] ->
-        "\n    __typename\n    " <> Enum.join(return_values, "\n    ")
-
-      _ ->
-        ""
-    end
-  end
-
-  defp returned_fields(%{kind: "INTERFACE"} = return_type) do
-    fields = Map.get(return_type, :fields, [])
-    possible_types = Map.get(return_type, :possible_types, [])
-
-    interface_fields =
-      for field <- fields do
-        if field.type == "OBJECT" do
-          "#{field.name} {\n    }"
-        else
-          field.name
-        end
-      end
-
-    shared_fields_string =
-      case interface_fields do
-        [_ | _] -> "\n    " <> Enum.join(interface_fields, "\n    ")
-        _ -> ""
-      end
-
-    specific_types =
-      for possible_type <- possible_types do
-        "... on #{possible_type.name} {\n    }"
-      end
-
-    specific_types_string =
-      case specific_types do
-        [_ | _] ->
-          "\n    " <> Enum.join(specific_types, "\n    ")
-
-        _ ->
-          ""
-      end
-
-    shared_fields_string <> specific_types_string
   end
 end

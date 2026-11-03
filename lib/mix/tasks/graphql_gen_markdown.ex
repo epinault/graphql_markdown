@@ -17,6 +17,7 @@ defmodule Mix.Tasks.GraphqlGenMarkdown do
     -m, --multi-page        Generate each type in a separate file. Default: [single page format]
     -t, --title             Specify the page title for the generated file (Applies to single file only)
     --no-toc                Do not generate the table of content (Applies to single file only)
+    -d, --depth             How many nested levels the example operations select. Default: 2
 
 
   Examples
@@ -49,7 +50,8 @@ defmodule Mix.Tasks.GraphqlGenMarkdown do
     output_dir: :string,
     multi_page: :boolean,
     title: :string,
-    no_toc: :boolean
+    no_toc: :boolean,
+    depth: :integer
   ]
 
   @args_aliases [
@@ -57,10 +59,11 @@ defmodule Mix.Tasks.GraphqlGenMarkdown do
     s: :schema_module,
     o: :output_dir,
     m: :multi_page,
-    t: :title
+    t: :title,
+    d: :depth
   ]
 
-  @usage "usage: mix graphql_gen_markdown (-f path/to/schema.json | -s MyApp.Schema) [-o DIR] [-m] [-t TITLE] [--no-toc]"
+  @usage "usage: mix graphql_gen_markdown (-f path/to/schema.json | -s MyApp.Schema) [-o DIR] [-m] [-t TITLE] [--no-toc] [-d DEPTH]"
 
   @doc false
   def run(args) do
@@ -118,6 +121,9 @@ defmodule Mix.Tasks.GraphqlGenMarkdown do
 
   defp error_message(module, {:introspection_failed, result}),
     do: "Introspecting #{module} failed: #{inspect(result)}"
+
+  defp error_message(_path, {:invalid_depth, depth}),
+    do: "--depth must be a positive integer, got #{inspect(depth)}"
 
   defp error_message(path, %Jason.DecodeError{} = error),
     do: "#{path} is not valid JSON: #{Exception.message(error)}"

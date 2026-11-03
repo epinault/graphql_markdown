@@ -36,6 +36,7 @@ query Droids {
     id
     name
     owner {
+      name
     }
   }
 }
@@ -58,6 +59,7 @@ query Droid($id: ID!) {
     id
     name
     owner {
+      name
     }
   }
 }
@@ -74,6 +76,7 @@ query MaybeDroids {
     id
     name
     owner {
+      name
     }
   }
 }
@@ -122,8 +125,14 @@ query SearchResults {
   searchResults {
     __typename
     ... on Droid {
+      id
+      name
+      owner {
+        name
+      }
     }
     ... on Human {
+      name
     }
   }
 }

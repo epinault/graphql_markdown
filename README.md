@@ -46,6 +46,19 @@ it will generate the following file in your current folder:
 
 You can change the default title for the single page with `-t` option.
 
+### Example operations
+
+Every query, mutation and subscription comes with an example operation that
+selects the scalar and enum fields of its return type, recursing into nested
+objects, interfaces and unions two levels deep. Use `-d` to change the depth:
+
+```shell
+mix graphql_gen_markdown -f ./schema.json -d 3
+```
+
+A field whose type is already selected further up the same path is skipped,
+so recursive types such as `friends: [Character]` do not blow up the example.
+
 ### Multi pages
 
 When you run the following

@@ -29,11 +29,14 @@ Type: [Character](interfaces.html#character)
 ```gql
 query HeroForEpisode($episode: String!) {
   heroForEpisode(episode: $episode) {
+    __typename
     id
     name
     ... on Human {
+      age
     }
     ... on Droid {
+      primaryFunction
     }
   }
 }

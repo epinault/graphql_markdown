@@ -10,7 +10,9 @@ defmodule Mix.Tasks.GraphqlGenMarkdown do
   mix graphql_gen_markdown [OPTIONS]
 
   valid override args:
-    -f, --schema            Path to the schema file
+    -f, --schema            Path to the introspection JSON file
+    -s, --schema-module     Absinthe schema module to introspect in-process
+                            (requires absinthe in your deps). Use one of -f or -s
     -o, --output-dir        Where to output the files. Default: [Current Directory]
     -m, --multi-page        Generate each type in a separate file. Default: [single page format]
     -t, --title             Specify the page title for the generated file (Applies to single file only)
@@ -32,11 +34,18 @@ defmodule Mix.Tasks.GraphqlGenMarkdown do
   mix graphql_gen_markdown -f myschema.json -m
   ```
 
+  3. Introspect an Absinthe schema directly, without an intermediate JSON file
+
+  ```elixir
+  mix graphql_gen_markdown -s MyApp.Schema -o guides
+  ```
+
   """
   use Mix.Task
 
   @args [
     schema: :string,
+    schema_module: :string,
     output_dir: :string,
     multi_page: :boolean,
     title: :string,
@@ -45,34 +54,70 @@ defmodule Mix.Tasks.GraphqlGenMarkdown do
 
   @args_aliases [
     f: :schema,
+    s: :schema_module,
     o: :output_dir,
     m: :multi_page,
     t: :title
   ]
 
+  @usage "usage: mix graphql_gen_markdown (-f path/to/schema.json | -s MyApp.Schema) [-o DIR] [-m] [-t TITLE] [--no-toc]"
+
   @doc false
   def run(args) do
     {parsed_args, _} = OptionParser.parse!(args, aliases: @args_aliases, strict: @args)
+    options = schema_options(parsed_args)
 
-    unless parsed_args[:schema] do
-      Mix.raise("""
-      --schema (-f) is required.
-
-      usage: mix graphql_gen_markdown -f path/to/schema.json [-o DIR] [-m] [-t TITLE] [--no-toc]
-      """)
-    end
-
-    case GraphqlMarkdown.generate(parsed_args) do
+    case GraphqlMarkdown.generate(options) do
       {:ok, files} ->
         Mix.shell().info("Generated:\n" <> Enum.map_join(files, "\n", &("  " <> &1)))
         {:ok, files}
 
       {:error, reason} ->
-        Mix.raise(error_message(parsed_args[:schema], reason))
+        Mix.raise(error_message(schema_source(options), reason))
     end
   end
 
+  # Validates that exactly one schema source is given. A schema module lives
+  # in the user's project, so the project is compiled and loaded first, the
+  # same way mix absinthe.schema.json does it.
+  defp schema_options(parsed_args) do
+    case {parsed_args[:schema], parsed_args[:schema_module]} do
+      {nil, nil} ->
+        Mix.raise("One of --schema (-f) or --schema-module (-s) is required.\n\n" <> @usage)
+
+      {_path, nil} ->
+        parsed_args
+
+      {nil, module_name} ->
+        Mix.Task.run("loadpaths")
+        Mix.Task.run("compile")
+        Keyword.put(parsed_args, :schema_module, schema_module(module_name))
+
+      {_path, _module} ->
+        Mix.raise("Pass either --schema (-f) or --schema-module (-s), not both.\n\n" <> @usage)
+    end
+  end
+
+  # safe_concat only resolves modules that already exist, so a typo or an
+  # uncompiled module is caught here rather than creating a new atom.
+  defp schema_module(module_name) do
+    Module.safe_concat([module_name])
+  rescue
+    ArgumentError -> Mix.raise(error_message(module_name, {:not_a_schema, module_name}))
+  end
+
+  defp schema_source(options), do: options[:schema] || inspect(options[:schema_module])
+
   defp error_message(path, :enoent), do: "Could not read #{path}: no such file or directory"
+
+  defp error_message(module, {:not_a_schema, _}),
+    do: "#{module} is not an Absinthe schema module (or is not compiled)"
+
+  defp error_message(_module, :absinthe_not_available),
+    do: "--schema-module needs Absinthe. Add {:absinthe, \"~> 1.7\"} to your dependencies"
+
+  defp error_message(module, {:introspection_failed, result}),
+    do: "Introspecting #{module} failed: #{inspect(result)}"
 
   defp error_message(path, %Jason.DecodeError{} = error),
     do: "#{path} is not valid JSON: #{Exception.message(error)}"

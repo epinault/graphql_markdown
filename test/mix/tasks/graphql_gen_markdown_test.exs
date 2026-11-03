@@ -18,6 +18,26 @@ defmodule Mix.Tasks.GraphqlGenMarkdownTest do
     assert message =~ Path.join(dir, "graphql_schema.md")
   end
 
+  test "introspects an Absinthe schema module with --schema-module", %{tmp_dir: dir} do
+    GraphqlGenMarkdown.run(["-s", "GraphqlMarkdown.TestSchema", "-o", dir])
+
+    assert_received {:mix_shell, :info, ["Generated:" <> _ = message]}
+    assert message =~ Path.join(dir, "graphql_schema.md")
+    assert File.read!(Path.join(dir, "graphql_schema.md")) =~ "### Droid"
+  end
+
+  test "raises when both --schema and --schema-module are given" do
+    assert_raise Mix.Error, ~r/either --schema.*or --schema-module/i, fn ->
+      GraphqlGenMarkdown.run(["-f", "schema.json", "-s", "GraphqlMarkdown.TestSchema"])
+    end
+  end
+
+  test "raises a readable error when the module is not an Absinthe schema" do
+    assert_raise Mix.Error, ~r/Not\.A\.Schema is not an Absinthe schema/, fn ->
+      GraphqlGenMarkdown.run(["-s", "Not.A.Schema"])
+    end
+  end
+
   test "raises with usage when --schema is missing" do
     assert_raise Mix.Error, ~r/--schema.*is required/i, fn ->
       GraphqlGenMarkdown.run([])

@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+* `--schema-module` / `-s` on `mix graphql_gen_markdown`, and `schema_module:` on `GraphqlMarkdown.generate/1` and `render/1`, introspect an Absinthe schema in-process instead of requiring an introspection JSON file. Absinthe is an optional dependency ([#15](https://github.com/epinault/graphql_markdown/issues/15))
+
+### Changed
+
+* `generate/1` and `render/1` return `{:error, :missing_schema}` instead of crashing when neither `:schema` nor `:schema_module` is given
+* Minimum Elixir version is now 1.16
+
 ## 1.1.0 - 2026-11-03
 
 ### Added

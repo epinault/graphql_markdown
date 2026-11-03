@@ -25,6 +25,7 @@
 * Descriptions containing newlines or `|` broke markdown tables; cells are now escaped ([#8](https://github.com/epinault/graphql_markdown/issues/8))
 * Object, interface and input descriptions were never rendered ([#9](https://github.com/epinault/graphql_markdown/issues/9))
 * Operations and types without fields rendered a header-only table, and the default-value sentence was glued to the description without a space ([#10](https://github.com/epinault/graphql_markdown/issues/10))
+* In single-page output the "Possible types" of a union linked to `objects.html#…`, which does not exist in a single page; they now link to the in-page anchor ([#32](https://github.com/epinault/graphql_markdown/issues/32))
 
 ## 1.0.0 - 2026-10-29
 

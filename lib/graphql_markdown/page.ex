@@ -98,18 +98,18 @@ defmodule GraphqlMarkdown.Page do
     |> table(value: {}, description: {})
   end
 
-  defp type_body(%{"kind" => "UNION"} = type, _layout) do
-    ["Possible types:", "", possible_types(type["possibleTypes"])]
+  defp type_body(%{"kind" => "UNION"} = type, layout) do
+    ["Possible types:", "", possible_types(type["possibleTypes"], layout)]
   end
 
   defp type_body(type, layout) do
     type["fields"] |> field_rows(layout) |> table(field: {}, description: {})
   end
 
-  defp possible_types(types) do
+  defp possible_types(types, layout) do
     Enum.map(types, fn possible_type ->
-      possible_type["name"]
-      |> MarkdownHelpers.link("objects.html##{String.downcase(possible_type["name"])}")
+      possible_type
+      |> type_link(possible_type["name"], layout)
       |> MarkdownHelpers.list(1)
     end)
   end

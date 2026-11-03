@@ -12,6 +12,7 @@
 ### Changed
 
 * Pages are rendered fully in memory and written once. `generate/1` can run concurrently in the same VM, and a failure no longer leaves a partially written file behind
+* Minimum Elixir version is now 1.15 (it was declared as 1.14, which `mix.exs` already relied on being newer than). CI tests 1.17 to 1.20 ([#14](https://github.com/epinault/graphql_markdown/issues/14))
 * Single-page and multi-page output share one renderer (`GraphqlMarkdown.Page`). Multi-page files are now returned in the same order as the single-page sections, with `subscriptions.md` after `mutations.md`
 
 ### Removed

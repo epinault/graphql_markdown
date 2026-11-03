@@ -3,12 +3,17 @@ defmodule GraphqlMarkdown.Schema do
   Internal Schema representation of Graphql section we care about
   """
   @typedoc """
-   test
+  The parts of an introspection result the renderers work from.
+
+  `queries`, `mutations` and `subscriptions` hold the root operation type
+  (an introspection type map with its `"fields"`), or `nil` when the schema
+  has no such root. The other keys hold the user-defined types of that
+  kind, sorted by name, with the root operation types left out.
   """
   @type t :: %__MODULE__{
-          mutations: list(map()),
-          queries: list(map()),
-          subscriptions: list(map()),
+          mutations: map() | nil,
+          queries: map() | nil,
+          subscriptions: map() | nil,
           inputs: list(map()),
           objects: list(map()),
           enums: list(map()),

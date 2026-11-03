@@ -4,8 +4,8 @@ Converts a JSON Graphql Schema to Markdown
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `graphql_markdown` to your list of dependencies in `mix.exs`:
+Add `graphql_markdown` to your list of dependencies in `mix.exs`. It requires
+Elixir 1.15 or later:
 
 ```elixir
 def deps do
@@ -27,10 +27,7 @@ Generate a single file called `graphql_schema.md` in the current dir:
 mix graphql_gen_markdown -f ./schema.json
 ```
 
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/graphql_markdown](https://hexdocs.pm/graphql_markdown).
+The full documentation is on [HexDocs](https://hexdocs.pm/graphql_markdown).
 
 ## Quick Start
 

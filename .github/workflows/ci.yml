@@ -34,6 +34,11 @@ jobs:
           # Elixir 1.19 supports OTP 26-28
           - elixir_version: "1.19.6"
             otp_version: "29"
+        include:
+          # Toolchain pin, matches .tool-versions
+          - os: ubuntu-22.04
+            elixir_version: "1.20.5"
+            otp_version: "29.1.2"
 
     steps:
       - uses: actions/checkout@v7
@@ -78,8 +83,8 @@ jobs:
         id: beam
         uses: erlef/setup-beam@v1
         with:
-          elixir-version: "1.20.4"
-          otp-version: "29"
+          elixir-version: "1.20.5"
+          otp-version: "29.1.2"
 
       - uses: actions/cache@v6
         with:
@@ -132,8 +137,8 @@ jobs:
         id: beam
         uses: erlef/setup-beam@v1
         with:
-          elixir-version: "1.20.4"
-          otp-version: "29"
+          elixir-version: "1.20.5"
+          otp-version: "29.1.2"
 
       - uses: actions/cache@v6
         with:
